@@ -1,0 +1,22 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: photo-mosaic-backend
+    ports:
+      - "5000:8080"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: photo-mosaic-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
