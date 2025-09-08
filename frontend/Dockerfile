@@ -22,6 +22,9 @@ FROM nginx:alpine AS production
 # Copy the built application from the 'build' stage
 COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
 
+# Copy the Nginx config that routes api requests to the backend
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 # Expose port 80 to the host machine
 EXPOSE 80
 

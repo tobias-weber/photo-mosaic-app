@@ -4,8 +4,6 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: photo-mosaic-backend
-    ports:
-      - "5000:8080"
     volumes:
       - ./data:/app/data
     environment:
@@ -17,6 +15,6 @@ services:
       dockerfile: Dockerfile
     container_name: photo-mosaic-frontend
     ports:
-      - "4200:80"
+      - "8080:80"
     depends_on:
       - backend
