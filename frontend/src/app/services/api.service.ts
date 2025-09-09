@@ -23,4 +23,18 @@ export class ApiService {
         return this.http.get<any>(`${this.BASE_URL}/${endpoint}`);
     }
 
+    register(userName: string, password: string): Observable<AuthResponse> {
+        return this.http.post<AuthResponse>(`${this.BASE_URL}/register`, { userName, password });
+    }
+
+    login(userName: string, password: string): Observable<AuthResponse> {
+        return this.http.post<AuthResponse>(`${this.BASE_URL}/login`, {userName, password})
+    }
+
+
+}
+
+export interface AuthResponse {
+    token: string;
+    expiration: string;
 }

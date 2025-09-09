@@ -32,5 +32,6 @@ Configuration is loaded from appsettings.json and appsettings.Development.json.
 For development, uploaded files and the SQLite database are stored in the `storage/` directory.
 
 For production, it is recommended to use the supplied [`docker-compose.yml`](../docker-compose.yml) file in the project root. It automatically creates a volume for persistent file and database storage.
+It is also important to change the Admin password and JWT key. This can be done with the environment variables `Admin__Password` and `Jwt__Key`.
 
 ---

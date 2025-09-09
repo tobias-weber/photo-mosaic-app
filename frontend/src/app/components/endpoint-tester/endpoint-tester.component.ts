@@ -32,4 +32,27 @@ export class EndpointTesterComponent {
             },
         })
     }
+
+
+    register() {
+        this._api.register(this.endpoint(), 'password').subscribe({
+            next: data => {
+                console.log(data)
+                localStorage.setItem("jwt_token", data.token);
+            },
+        })
+    }
+
+    login() {
+        this._api.login(this.endpoint(), 'password').subscribe({
+            next: data => {
+                console.log(data)
+                localStorage.setItem("jwt_token", data.token);
+            },
+        })
+    }
+
+    logout() {
+        localStorage.removeItem("jwt_token");
+    }
 }

@@ -1,13 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace backend.Models;
 
-public class User
+public class User : IdentityUser<Guid>
 {
-    public Guid UserId { get; set; }
-    
-    [MaxLength(128)]
-    public string Name { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public ICollection<Project> Projects { get; set; } = null!;

@@ -23,11 +23,20 @@ This project demonstrates a **photo mosaic generator** built with:
    git clone https://github.com/your-username/photo-mosaic.git
    cd photo-mosaic
    ```
-2. Build and start containers:
+2. Optional: 
+      Change the private key used for JWT and default admin password (`adminPw`) to secure new values. This can be done by with environment variables in `docker-compose.yml`:
+    ```yml
+    services:
+      backend:
+        environment:
+          - Jwt__Key=MyVerySecureNewKey
+          - Admin__Password=MyVerySecurePassword
+    ```
+3. Build and start containers:
     ```bash
     docker-compose up --build
     ```
-3. Open frontend in your browser with `http://localhost:8080`.
+4. Open frontend in your browser with `http://localhost:8080`.
 
 To reset the app (deleting the database and images) it is easiest to use the following command:
 ```bash
