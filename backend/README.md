@@ -29,8 +29,8 @@ It handles image uploads, mosaic generation, and metadata storage in SQLite.
 
 Configuration is loaded from appsettings.json and appsettings.Development.json.
 
-Uploaded files and the SQLite database are stored in /data (created at project root when using Docker).
+For development, uploaded files and the SQLite database are stored in the `storage/` directory.
 
-For production, it is recommended to use the supplied [`docker-compose.yml`](../docker-compose.yml) file in the project root.
+For production, it is recommended to use the supplied [`docker-compose.yml`](../docker-compose.yml) file in the project root. It automatically creates a volume for persistent file and database storage.
 
 ---

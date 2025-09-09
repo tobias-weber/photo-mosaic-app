@@ -1,9 +1,18 @@
+using backend.Data;
+using backend.Helpers;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+// Database service
+builder.Services.AddDbContext<AppDbContext>(options => 
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// CORS
 var  corsPolicy = "_allowFrontend";
 var allowedOrigins = new string[]
 {
@@ -32,6 +41,15 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Create the database if it does not exist
+using (var scope = app.Services.CreateScope())
+{
+    DatabaseHelper.EnsureDatabaseAndDirectoryCreated(scope.ServiceProvider.GetRequiredService<AppDbContext>());
+}
+
+
+//////////////////// Endpoints ///////////////////////
 
 var summaries = new[]
 {

@@ -1,4 +1,8 @@
-﻿# Created by https://www.toptal.com/developers/gitignore/api/csharp,rider,aspnetcore
+﻿
+# persistent files (db, images...)
+storage/
+
+# Created by https://www.toptal.com/developers/gitignore/api/csharp,rider,aspnetcore
 # Edit at https://www.toptal.com/developers/gitignore?templates=csharp,rider,aspnetcore
 
 ### ASPNETCore ###

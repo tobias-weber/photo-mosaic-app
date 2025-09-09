@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: photo-mosaic-backend
     volumes:
-      - ./data:/app/data
+      - mosaic-data:/app/storage
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
 
@@ -18,3 +18,6 @@ services:
       - "8080:80"
     depends_on:
       - backend
+
+volumes:
+  mosaic-data:

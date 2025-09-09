@@ -3,14 +3,11 @@
 This project demonstrates a **photo mosaic generator** built with:
 
 - **Backend** (`/backend`) — ASP.NET Core 9 Web API  
-  Handles user requests, image uploads, mosaic generation logic, and stores metadata in SQLite + raw files on disk (`/data`).  
+  Handles user requests, image uploads, mosaic generation logic, and stores metadata in SQLite + raw files on disk (`/backend/storage` during development).  
 
-- **Frontend** (`/frontend`) — Angular + Nginx  
+- **Frontend** (`/frontend`) — Angular
   Provides the UI for uploading images, managing tasks, and displaying generated mosaics.  
   Served via Nginx, which also proxies `/backend-api/` requests to the backend container.  
-
-- **Data** (`/data`) — Volume mount for uploaded images and SQLite database.  
-  (This folder is ignored by Git.)
 
 ---
 
@@ -31,6 +28,11 @@ This project demonstrates a **photo mosaic generator** built with:
     docker-compose up --build
     ```
 3. Open frontend in your browser with `http://localhost:8080`.
+
+To reset the app (deleting the database and images) it is easiest to use the following command:
+```bash
+docker-compose down -v
+```
 
 
 ## 🛠 Development Notes
