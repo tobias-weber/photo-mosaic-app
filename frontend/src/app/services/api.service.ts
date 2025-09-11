@@ -23,12 +23,16 @@ export class ApiService {
         return this.http.get<any>(`${this.BASE_URL}/${endpoint}`);
     }
 
-    register(userName: string, password: string): Observable<AuthResponse> {
+    register(userName: string, password: string) {
         return this.http.post<AuthResponse>(`${this.BASE_URL}/register`, { userName, password });
     }
 
-    login(userName: string, password: string): Observable<AuthResponse> {
+    login(userName: string, password: string) {
         return this.http.post<AuthResponse>(`${this.BASE_URL}/login`, {userName, password})
+    }
+
+    getUser(userName: string) {
+        return this.http.get<User>(`${this.BASE_URL}/users/${userName}`);
     }
 
 
@@ -37,4 +41,10 @@ export class ApiService {
 export interface AuthResponse {
     token: string;
     expiration: string;
+}
+
+export interface User {
+    userId: string;
+    userName: string;
+    createdAt: Date;
 }

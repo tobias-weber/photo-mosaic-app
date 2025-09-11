@@ -1,7 +1,8 @@
 import {computed, inject, Injectable, signal} from '@angular/core';
 import {ApiService, AuthResponse} from './api.service';
 import {Router} from '@angular/router';
-import {tap} from 'rxjs';
+import {filter, switchMap, tap} from 'rxjs';
+import {toObservable, toSignal} from '@angular/core/rxjs-interop';
 
 
 export const maxNameLength = 128;
@@ -38,19 +39,17 @@ export class AuthService {
         if (!this.token() || !exp) return false;
         return new Date(exp) > new Date();
     });
-
-    user = computed<UserInfo | null>(() => {
-        const payload = this.payload();
-        if (payload) {
-            return {
-                username: payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
-                role: payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
-            }
-        }
-        return null;
-    });
-
-    isAdmin = computed(() => this.user()?.role === 'Admin');
+    userName = computed<string | null>(() =>
+        this.payload()?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || null);
+    userRole = computed<string | null>(() =>
+        this.payload()?.['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || null);
+    isAdmin = computed(() => this.userRole() === 'Admin');
+    user = toSignal(
+        toObservable(this.userName).pipe(
+            filter(userName => !!userName), // Only proceed if the username is not null
+            switchMap(userName => this.api.getUser(userName!))
+        )
+    );
 
 
     register(username: string, password: string) {

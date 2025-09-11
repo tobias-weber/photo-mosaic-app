@@ -1,6 +1,7 @@
+using System.Security.Claims;
 using System.Text;
 using backend.Data;
-using backend.DTOs;
+using backend.Endpoints;
 using backend.Helpers;
 using backend.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -15,7 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 // Database service
-builder.Services.AddDbContext<AppDbContext>(options => 
+builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
@@ -58,17 +59,32 @@ builder.Services
 
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"))
-    .AddPolicy("UserPolicy", policy => policy.RequireRole("User"));
+    .AddPolicy("UserPolicy", policy => policy.RequireRole("User"))
+    .AddPolicy("OwnerOrAdmin", policy => policy.RequireAssertion(context =>
+        {
+            if (context.User.IsInRole("Admin"))
+            {
+                return true;
+            }
 
+            var userNameClaim = context.User.FindFirstValue(ClaimTypes.Name);
+            var routeUserName = context.Resource switch
+            {
+                HttpContext http => http.Request.RouteValues["userName"]?.ToString(),
+                _ => null
+            };
 
+            return userNameClaim != null && routeUserName == userNameClaim;
+        })
+    );
 
 
 // CORS
-var  corsPolicy = "_allowFrontend";
-var allowedOrigins = new string[]
+const string corsPolicy = "_allowFrontend";
+var allowedOrigins = new[]
 {
-    "http://localhost:4200",   // Angular dev server
-    "http://frontend:80"       // Docker Compose service name
+    "http://localhost:4200", // Angular dev server
+    "http://frontend:80" // Docker Compose service name
 };
 builder.Services.AddCors(options =>
 {
@@ -83,7 +99,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Apply CORS middleware
-app.UseCors(corsPolicy);  // MUST come before endpoint mapping
+app.UseCors(corsPolicy); // MUST come before endpoint mapping
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -107,40 +123,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 
-
 //////////////////// Endpoints ///////////////////////
 
-// Registration Endpoint
-app.MapPost("/register", async (RegisterModel model, UserManager<User> userManager, IConfiguration config) =>
-{
-    var user = new User { UserName = model.UserName };
-    var result = await userManager.CreateAsync(user, model.Password);
-
-    if (result.Succeeded)
-    {
-        Console.WriteLine($"Config: {config["Jwt:Issuer"]} {config["Jwt:Audience"]} {config["Jwt:Key"]} {config["Jwt:ExpiresInHours"]}");
-        await userManager.AddToRoleAsync(user, "User");
-        var authResult = await AuthHelper.GenerateTokenAsync(user!, config, userManager);
-        return Results.Ok(authResult);
-    }
-
-    return Results.BadRequest(result.Errors);
-});
-
-// Login Endpoint
-app.MapPost("/login", async (LoginModel model, SignInManager<User> signInManager, IConfiguration config, UserManager<User> userManager) =>
-{
-    var result = await signInManager.PasswordSignInAsync(model.UserName, model.Password, isPersistent: false, lockoutOnFailure: false);
-
-    if (result.Succeeded)
-    {
-        var user = await userManager.FindByNameAsync(model.UserName);
-        var authResult = await AuthHelper.GenerateTokenAsync(user!, config, userManager);
-        return Results.Ok(authResult);
-    }
-
-    return Results.Unauthorized();
-});
+app.MapAuthEndpoints();
+app.MapUserEndpoints();
+app.MapProjectEndpoints();
 
 
 //////////////////// For testing ///////////////////////

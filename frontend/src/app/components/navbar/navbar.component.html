@@ -18,7 +18,10 @@
                 </li>
             </ul>
 
-            <ul class="navbar-nav ms-auto">
+            <span class="navbar-text ms-auto me-3">
+                {{user()?.userName}}
+            </span>
+            <ul class="navbar-nav">
                 <li class="nav-item">
                     <button class="btn btn-outline-danger btn-sm" (click)="logout()">Logout</button>
                 </li>

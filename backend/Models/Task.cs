@@ -10,7 +10,7 @@ public enum TaskStatus
 
 public class Task
 {
-    public Guid TaskId { get; set; }
+    public Guid TaskId { get; init; }
     
     public DateTime StartedAt { get; set; }
     public DateTime FinishedAt { get; set; }
@@ -21,9 +21,9 @@ public class Task
     
     public Mosaic? Mosaic { get; set; }
     
-    public Guid ProjectId { get; set; }
-    public Project Project { get; set; } = null!;
+    public Guid ProjectId { get; init; }
+    public Project Project { get; init; } = null!;
     
-    public ICollection<ImageRef> Images { get; set; } = null!;
+    public ICollection<ImageRef> Images { get; init; } = null!;
 
 }
