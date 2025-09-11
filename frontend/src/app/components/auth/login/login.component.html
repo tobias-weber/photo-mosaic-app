@@ -1,0 +1,35 @@
+<div class="card p-4">
+    <h3>Login</h3>
+    @if (auth.isLoggedIn()) {
+        <div class="mb-3">
+            You are already logged in.
+        </div>
+
+        <div>
+            <button class="btn btn-primary" (click)="logout()">Log out</button>
+        </div>
+    } @else {
+        <form [formGroup]="form" (ngSubmit)="submit()" class="mb-3">
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input class="form-control" formControlName="username" autocomplete="username"/>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control" formControlName="password" autocomplete="current-password"/>
+            </div>
+
+            @if (error()) {
+                <div class="alert alert-danger">{{ error() }}</div>
+            }
+
+            <button type="submit" class="btn btn-primary w-100" [disabled]="form.invalid">
+                Login
+            </button>
+        </form>
+
+        <div>
+            <span>Have no account? <a routerLink="/register">Register here.</a></span>
+        </div>
+    }
+</div>
