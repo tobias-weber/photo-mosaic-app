@@ -35,6 +35,35 @@ export class ApiService {
         return this.http.get<User>(`${this.BASE_URL}/users/${userName}`);
     }
 
+    deleteUser(userName: string) {
+        return this.http.delete<void>(`${this.BASE_URL}/users/${userName}`);
+    }
+
+    getProjects(userName: string) {
+        return this.http.get<Project[]>(`${this.BASE_URL}/users/${userName}/projects`);
+    }
+
+    getProject(userName: string, projectId: string) {
+        return this.http.get<Project>(`${this.BASE_URL}/users/${userName}/projects/${projectId}`);
+    }
+
+    createProject(userName: string, title: string) {
+        return this.http.post<Project>(`${this.BASE_URL}/users/${userName}/projects/`, {title})
+    }
+
+    updateProject(userName: string, project: Project) {
+        return this.http.put<Project>(`${this.BASE_URL}/users/${userName}/projects/${project.projectId}`, project)
+    }
+
+    deleteProject(userName: string, projectId: string) {
+        return this.http.delete<void>(`${this.BASE_URL}/users/${userName}/projects/${projectId}`);
+    }
+
+    // Admin Endpoints
+    getUsers() {
+        return this.http.get<User[]>(`${this.BASE_URL}/users`);
+    }
+
 
 }
 
@@ -46,5 +75,11 @@ export interface AuthResponse {
 export interface User {
     userId: string;
     userName: string;
+    createdAt: Date;
+}
+
+export interface Project {
+    projectId: string;
+    title: string;
     createdAt: Date;
 }

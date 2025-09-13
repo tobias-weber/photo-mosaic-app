@@ -1,0 +1,15 @@
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1200">
+    @for (toast of toastService.toasts(); track toast) {
+        <ngb-toast
+            class="bg-opacity-75 border-0"
+            [class]="toast.classname"
+            [autohide]="autohide"
+            (mouseenter)="autohide = false"
+            (mouseleave)="autohide = true"
+            [delay]="toast.delay || defaultDelay"
+            (hidden)="autohide = true; toastService.remove(toast)"
+        >
+            <span>{{ toast.message }}</span>
+        </ngb-toast>
+    }
+</div>

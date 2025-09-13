@@ -1,6 +1,7 @@
 ﻿using backend.Data;
 using backend.DTOs;
 using backend.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Endpoints;
@@ -28,7 +29,7 @@ public static class ProjectEndpoints
         });
 
         // POST a new project for a user
-        group.MapPost("/", async (AppDbContext db, string userName, string title) =>
+        group.MapPost("/", async (AppDbContext db, string userName, CreateProjectDto request) =>
         {
             var user = await db.Users.FirstOrDefaultAsync(u => u.UserName == userName);
             if (user is null) return Results.NotFound();
@@ -37,7 +38,7 @@ public static class ProjectEndpoints
             {
                 ProjectId = Guid.NewGuid(),
                 UserId = user.Id,
-                Title = title,
+                Title = request.Title,
             };
 
             db.Projects.Add(project);
@@ -47,7 +48,7 @@ public static class ProjectEndpoints
 
         // PUT to update a project
         group.MapPut("/{projectId:guid}",
-            async (AppDbContext db, string userName, Guid projectId, Project modifiedProject) =>
+            async (AppDbContext db, string userName, Guid projectId, ProjectDto modifiedProject) =>
             {
                 if (modifiedProject.ProjectId != projectId) return Results.Conflict();
                 var project = await GetProjectAsync(db, userName, projectId);

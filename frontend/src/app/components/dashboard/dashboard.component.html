@@ -1,10 +1,12 @@
 <div class="card p-4">
     <h3>Dashboard</h3>
 
-    @if (auth.isLoggedIn()) {
+    @if (isLoggedIn()) {
         <p>You are logged in! 🎉</p>
-        {{ auth.user() | json }}
+        {{ user() | json }}
     } @else {
         <p>You are not logged in!</p>
     }
 </div>
+
+<app-project-list></app-project-list>

@@ -1,0 +1,10 @@
+<div class="mt-3">
+    @if (project(); as p) {
+        <button class="btn btn-secondary mb-3" routerLink="/projects">View All</button>
+        <h2>{{ p.title }}</h2>
+        <p><small class="text-muted">Created at {{ p.createdAt | date:'short' }}</small></p>
+    } @else {
+        <p>Loading project...</p>
+    }
+
+</div>
