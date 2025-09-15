@@ -1,0 +1,48 @@
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+
+:host {
+    display: block;
+}
+
+.border-dashed {
+    border: 2px dashed var(--bs-border-color);
+}
+
+// Styles for the main drop zone element
+.drop-zone {
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+
+    &:hover {
+        border-color: $primary;
+        background-color: var(--bs-primary-bg-subtle) !important;
+    }
+}
+
+:host(.is-dragging) .drop-zone {
+    border-color: $success;
+    background-color: var(--bs-success-bg-subtle) !important;
+}
+
+.preview-item {
+    position: relative;
+
+    .preview-img {
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+    }
+
+    .btn-close {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background-color: rgba(255, 255, 255, 0.7);
+        border-radius: 50%;
+        padding: 0.4em;
+
+        &:hover {
+            background-color: white;
+        }
+    }
+}

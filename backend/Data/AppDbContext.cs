@@ -11,6 +11,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 {
     public DbSet<Project> Projects { get; set; }
     public DbSet<Task> Tasks { get; set; }
+    public DbSet<ImageRef> Images { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

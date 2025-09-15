@@ -47,7 +47,7 @@ export class AuthService {
     user = toSignal(
         toObservable(this.userName).pipe(
             filter(userName => !!userName), // Only proceed if the username is not null
-            switchMap(userName => this.api.getUser(userName!))
+            switchMap(userName => this.api.getUser(userName!)) // TODO: logout on error
         )
     );
 

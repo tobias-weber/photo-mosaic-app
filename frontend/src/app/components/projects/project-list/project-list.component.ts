@@ -5,7 +5,7 @@ import {DatePipe} from '@angular/common';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ToastService} from '../../../services/toast.service';
 import {ModalService} from '../../../services/modal.service';
-import {RouterLink} from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 
 @Component({
     selector: 'app-project-list',
@@ -25,6 +25,7 @@ export class ProjectListComponent implements OnInit {
     private fb = inject(FormBuilder);
     private toast = inject(ToastService);
     private modals = inject(ModalService);
+    private router = inject(Router);
 
     userName = this.auth.userName;
     projects = signal<Project[]>([]);
@@ -59,9 +60,8 @@ export class ProjectListComponent implements OnInit {
         }
         this.api.createProject(this.auth.userName()!, this.newProjectForm.value.title!).subscribe({
             next: project => {
-                this.toast.info(`Created new project "${project.title}"`);
-                this.loadProjects();
-
+                this.toast.success(`Created new project "${project.title}"`);
+                this.router.navigate([`/projects/${project.projectId}`]);
             },
             error: () => this.toast.error('Unable to create new project')
         })
@@ -73,7 +73,7 @@ export class ProjectListComponent implements OnInit {
         if (await this.modals.openConfirmModal(msg, 'Delete Project', 'Delete')) {
             this.api.deleteProject(this.userName()!, project.projectId!).subscribe({
                 next: () => {
-                    this.toast.info(`Deleted "${project.title}"`);
+                    this.toast.success(`Deleted "${project.title}"`);
                     this.loadProjects();
                 },
                 error: () => this.toast.error('Unable to delete project')

@@ -4,6 +4,7 @@ using backend.Data;
 using backend.Endpoints;
 using backend.Helpers;
 using backend.Models;
+using backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -95,6 +96,9 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod();
     });
 });
+
+// Custom services
+builder.Services.AddScoped<IImageStorageService, ImageStorageService>();
 
 var app = builder.Build();
 

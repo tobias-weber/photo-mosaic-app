@@ -12,7 +12,7 @@ export class ToastService {
         this._toasts.update((toasts) => [...toasts, toast]);
     }
 
-    showSuccess(message: string, delay?: number) {
+    success(message: string, delay?: number) {
         this.show({
             message,
             classname: 'bg-success bg-opacity-75 text-light',
@@ -31,7 +31,7 @@ export class ToastService {
     warning(message: string, delay?: number) {
         this.show({
             message,
-            classname: 'bg-warning text-light',
+            classname: 'bg-warning text-warning-emphasis',
             delay
         })
     }

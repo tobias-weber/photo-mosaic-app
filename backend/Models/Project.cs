@@ -13,4 +13,6 @@ public class Project
     public Guid UserId { get; init; }
     public User User { get; init; } = null!;
     
+    public ICollection<Task> Tasks { get; init; } = null!;
+    
 }

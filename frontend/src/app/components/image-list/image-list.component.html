@@ -1,0 +1,66 @@
+@if (imageRefs()) {
+    @if (imageRefs().length > 0) {
+        <div class="d-flex justify-content-between align-items-end mb-3">
+        <span>
+            Showing {{ imageRefs().length }} images
+        </span>
+            <button class="btn btn-sm btn-danger d-flex align-items-center gap-1" (click)="deleteAll()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg"
+                     viewBox="0 0 16 16">
+                    <path
+                        d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+                </svg>
+                Delete All
+            </button>
+        </div>
+    } @else {
+        <p>Upload an image to get started.</p>
+    }
+
+    <ul class="list-group mb-3">
+        @for (image of imageRefs(); track image.imageId) {
+            <li class="list-group-item image-item">
+                <div class="d-flex justify-content-between">
+                    <div class="flex-grow-1"
+                         [ngbPopover]="popPreview" [popoverTitle]="popTitle" [popoverContext]="{ name: image.name}"
+                         [positionTarget]="popTarget"
+                         triggers="mouseenter:mouseleave"
+                         (shown)="showPreview(image)"
+                         (hidden)="hidePreview()"
+                         [openDelay]="250">
+                    <span class="small text-truncate image-name" #popTarget>
+                        {{ image.name }}
+                    </span>
+                    </div>
+                    <button
+                        class="btn-close"
+                        (click)="deleteImage(image)"
+                    ></button>
+                </div>
+            </li>
+        }
+    </ul>
+}
+
+<ng-template #popTitle let-name="name">
+    {{ name }}
+</ng-template>
+
+<ng-template #popPreview>
+    <div class="d-flex justify-content-center">
+        @if (imagePreview()) {
+            <img [src]="imagePreview()?.url"
+                 (load)="onImageLoad()"
+                 (error)="onImageError()"
+                 [hidden]="isLoadingPreview()"
+                 class="preview-img rounded" alt="Image">
+        }
+        @if (!imagePreview() || isLoadingPreview()) {
+            <div
+                class="bg-secondary-subtle rounded skeleton-glow"
+                style="width: 200px ;height: 200px"
+            ></div>
+        }
+    </div>
+</ng-template>
+

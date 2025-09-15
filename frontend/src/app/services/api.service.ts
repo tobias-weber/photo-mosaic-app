@@ -59,6 +59,34 @@ export class ApiService {
         return this.http.delete<void>(`${this.BASE_URL}/users/${userName}/projects/${projectId}`);
     }
 
+    uploadImage(userName: string, projectId: string, file: File, isTarget: boolean) {
+        const formData = new FormData();
+        formData.append('file', file, file.name);
+        formData.append('isTarget', String(isTarget));
+        return this.http.post<string>(`${this.BASE_URL}/users/${userName}/projects/${projectId}/images`, formData)
+    }
+
+    getImageRefs(userName: string, projectId: string, filter: 'TILES' | 'TARGETS' | 'ALL') {
+        return this.http.get<ImageRef[]>(`${this.BASE_URL}/users/${userName}/projects/${projectId}/images`,
+            {params: {filter}});
+    }
+
+    getImage(userName: string, projectId: string, imageId: string) {
+        return this.http.get(
+            `${this.BASE_URL}/users/${userName}/projects/${projectId}/images/${imageId}`,
+            { responseType: 'blob' } // important for binary data
+        );
+    }
+
+    deleteImage(userName: string, projectId: string, imageId: string) {
+        return this.http.delete<void>(`${this.BASE_URL}/users/${userName}/projects/${projectId}/images/${imageId}`);
+    }
+
+    deleteImages(userName: string, projectId: string, filter: 'TILES' | 'TARGETS' | 'ALL') {
+        return this.http.delete<ImageRef[]>(`${this.BASE_URL}/users/${userName}/projects/${projectId}/images`,
+            {params: {filter}});
+    }
+
     // Admin Endpoints
     getUsers() {
         return this.http.get<User[]>(`${this.BASE_URL}/users`);
@@ -82,4 +110,10 @@ export interface Project {
     projectId: string;
     title: string;
     createdAt: Date;
+}
+
+export interface ImageRef {
+    imageId: string;
+    name: string;
+    isTarget: boolean;
 }
