@@ -38,18 +38,31 @@ This project demonstrates a **photo mosaic generator** built with:
     ```
 4. Open frontend in your browser with `http://localhost:8080`.
 
+### Full Reset
 To reset the app (deleting the database and images) it is easiest to use the following command:
 ```bash
 docker-compose down -v
 ```
 
+### Scaling Workers
+To enable concurrent mosaic processing, simply run docker compose with multiple workers:
+```bash
+docker compose up --scale worker=3
+```
+
 
 ## 🛠 Development Notes
 Consult the READMEs for the [frontend](frontend/README.md) or [backend](backend/README.md) for how to run them outside of docker for development.
+For the [processing service](processing/README.md) it is recommended to always rely on docker. To only start the processing containers, run:
+```bash
+docker compose -f docker-compose.dev.yml up --build
+```
 
+Other notes:
 - Angular dev server runs on `http://localhost:4200` (outside Docker).
 - ASP.NET Core API runs on `http://localhost:5243`.
 - Angular dev server proxies `/backend-api/` → `http://localhost:5243/`
-    - Inside Docker, Nginx proxies `/backend-api/` → `backend:80/api/`.
+  - Inside Docker, Nginx proxies `/backend-api/` → `backend:80/api/`
+- Processing Python API runs on `http://localhost:8000`
 
 ---

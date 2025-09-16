@@ -18,6 +18,32 @@ services:
       - "8080:80"
     depends_on:
       - backend
+  
+  redis:
+    image: redis:8
+    container_name: redis
+
+  python-api:
+    build:
+      context: ./processing
+      dockerfile: Dockerfile
+    container_name: python-api
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - BACKEND_CALLBACK_URL=http://backend:8080/jobs
+    depends_on:
+      - redis
+
+  worker:
+    build:
+      context: ./processing
+      dockerfile: Dockerfile
+    command: rq worker --url redis://redis:6379 default
+    depends_on:
+      - redis
+    volumes:
+      - mosaic-data:/app/storage
 
 volumes:
   mosaic-data:

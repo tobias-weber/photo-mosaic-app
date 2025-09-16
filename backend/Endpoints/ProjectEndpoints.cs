@@ -122,7 +122,7 @@ public static class ProjectEndpoints
             var project = await GetProjectAsync(db, userName, projectId);
             if (project is null) return Results.NotFound();
 
-            db.Projects.Remove(project); // TODO: cascading remove tasks etc.
+            db.Projects.Remove(project); // TODO: cascading remove jobs etc.
             await db.SaveChangesAsync();
             return Results.NoContent();
         });

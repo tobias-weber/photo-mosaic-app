@@ -20,5 +20,5 @@ public class ImageRef
     public Guid? ProjectId { get; init; }
     public Project? Project { get; init; } = null!;
     
-    public ICollection<Task> Tasks { get; init; } = null!;
+    public ICollection<Job> Tasks { get; init; } = null!;
 }

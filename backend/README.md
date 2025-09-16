@@ -12,15 +12,17 @@ It handles image uploads, mosaic generation, and metadata storage in SQLite.
 - (Optional) Rider / Visual Studio Code / Visual Studio
 
 ### Steps
-1. Navigate to the backend folder:
+1. Ensure the containers required for processing are running
+
+2. Navigate to the backend folder:
    ```bash
    cd backend
    ```
-2. Restore dependencies:
+3. Restore dependencies:
     ```bash
     dotnet restore
     ```
-3. Run the API locally:
+4. Run the API locally:
     ```bash
     dotnet run
     ```
@@ -32,6 +34,7 @@ Configuration is loaded from appsettings.json and appsettings.Development.json.
 For development, uploaded files and the SQLite database are stored in the `storage/` directory.
 
 For production, it is recommended to use the supplied [`docker-compose.yml`](../docker-compose.yml) file in the project root. It automatically creates a volume for persistent file and database storage.
+Processing containers are deployed as well.
 It is also important to change the Admin password and JWT key. This can be done with the environment variables `Admin__Password` and `Jwt__Key`.
 
 ---

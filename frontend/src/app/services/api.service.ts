@@ -87,6 +87,19 @@ export class ApiService {
             {params: {filter}});
     }
 
+
+    // Jobs
+    createJob(userName: string, projectId: string, targetId: string) {
+        const body = {
+            algorithm: 'LAP',
+            subdivisions: 1,
+            n: 100,
+            target: targetId
+        }
+        return this.http.post(`${this.BASE_URL}/users/${userName}/projects/${projectId}/jobs`, body)
+    }
+
+
     // Admin Endpoints
     getUsers() {
         return this.http.get<User[]>(`${this.BASE_URL}/users`);

@@ -7,6 +7,6 @@ public class Mosaic
     public DateTime CreatedAt { get; init; }
     public int[] Assignment { get; init; } = null!;
     
-    public Guid TaskId { get; init; }
-    public Task Task { get; init; } = null!;
+    public Guid JobId { get; init; }
+    public Job Job { get; init; } = null!;
 }

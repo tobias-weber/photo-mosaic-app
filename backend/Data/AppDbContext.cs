@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Task = backend.Models.Task;
 
 namespace backend.Data;
 
@@ -10,7 +9,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     : IdentityDbContext<User, IdentityRole<Guid>, Guid>(options)
 {
     public DbSet<Project> Projects { get; set; }
-    public DbSet<Task> Tasks { get; set; }
+    public DbSet<Job> Jobs { get; set; }
     public DbSet<ImageRef> Images { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -24,7 +23,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             .Property(p => p.CreatedAt)
             .HasDefaultValueSql("CURRENT_TIMESTAMP")
             .ValueGeneratedOnAdd();
-        modelBuilder.Entity<Task>()
+        modelBuilder.Entity<Job>()
             .Property(t => t.StartedAt)
             .HasDefaultValueSql("CURRENT_TIMESTAMP")
             .ValueGeneratedOnAdd();
@@ -32,5 +31,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             .Property(m => m.CreatedAt)
             .HasDefaultValueSql("CURRENT_TIMESTAMP")
             .ValueGeneratedOnAdd();
+
+        modelBuilder.Entity<Job>()
+            .HasOne(j => j.TargetImage)
+            .WithMany()
+            .HasForeignKey(j => j.TargetImageId);
     }
 }

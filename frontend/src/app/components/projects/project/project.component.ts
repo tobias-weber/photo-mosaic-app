@@ -8,6 +8,7 @@ import {DatePipe, NgClass} from '@angular/common';
 import {ImageUploaderComponent} from '../../image-uploader/image-uploader.component';
 import {ImageListComponent} from '../../image-list/image-list.component';
 import {DropZoneComponent} from '../../image-uploader/drop-zone/drop-zone.component';
+import {ToastService} from '../../../services/toast.service';
 
 @Component({
     selector: 'app-project',
@@ -25,6 +26,7 @@ export class ProjectComponent {
     private route = inject(ActivatedRoute);
     private api = inject(ApiService);
     private auth = inject(AuthService);
+    private toast = inject(ToastService);
 
     imageList = viewChild(ImageListComponent);
 
@@ -44,4 +46,15 @@ export class ProjectComponent {
         });
     }
 
+    createMosaic() {
+        this.api.getImageRefs(this.userName()!, this.projectId()!, 'TARGETS').subscribe(images => {
+            if (images.length === 0) {
+                this.toast.error('No target images available.');
+            }
+            this.api.createJob(this.userName()!, this.projectId()!, images[0].imageId).subscribe({
+                next: (result) => console.log(result),
+                error: error => console.log(error),
+            })
+        })
+    }
 }

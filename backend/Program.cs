@@ -100,6 +100,12 @@ builder.Services.AddCors(options =>
 // Custom services
 builder.Services.AddScoped<IImageStorageService, ImageStorageService>();
 
+// Register HttpClient for Python API
+builder.Services.AddHttpClient<IProcessingService, ProcessingService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ProcessingService:BaseUrl"]!);
+});
+
 var app = builder.Build();
 
 // Apply CORS middleware
@@ -132,6 +138,7 @@ app.UseAuthorization();
 app.MapAuthEndpoints();
 app.MapUserEndpoints();
 app.MapProjectEndpoints();
+app.MapJobEndpoints();
 
 
 //////////////////// For testing ///////////////////////
