@@ -89,14 +89,25 @@ export class ApiService {
 
 
     // Jobs
-    createJob(userName: string, projectId: string, targetId: string) {
+    createJob(userName: string, projectId: string, targetId: string, n: number) {
         const body = {
             algorithm: 'LAP',
-            subdivisions: 1,
-            n: 100,
+            subdivisions: 5,
+            n: n,
             target: targetId
         }
         return this.http.post(`${this.BASE_URL}/users/${userName}/projects/${projectId}/jobs`, body)
+    }
+
+    getJobs(userName: string, projectId: string) {
+        return this.http.get<Job[]>(`${this.BASE_URL}/users/${userName}/projects/${projectId}/jobs`);
+    }
+
+    getMosaic(userName: string, projectId: string, jobId: string) {
+        return this.http.get(
+            `${this.BASE_URL}/users/${userName}/projects/${projectId}/jobs/${jobId}/mosaic`,
+            { responseType: 'blob' } // important for binary data
+        );
     }
 
 
@@ -129,4 +140,24 @@ export interface ImageRef {
     imageId: string;
     name: string;
     isTarget: boolean;
+}
+
+export interface Job {
+    jobId: string;
+    startedAt: Date;
+    finishedAt: Date;
+    status: JobStatus;
+    n: number;
+    algorithm: string;
+    subdivisions?: number;
+    target: string;
+}
+
+export enum JobStatus {
+    'Created' = 0,
+    'Submitted' = 1,
+    'Started' = 2,
+    'Finished' = 3,
+    'Aborted' = 4,
+    'Failed' = 5,
 }

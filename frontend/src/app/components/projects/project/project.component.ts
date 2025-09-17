@@ -9,6 +9,7 @@ import {ImageUploaderComponent} from '../../image-uploader/image-uploader.compon
 import {ImageListComponent} from '../../image-list/image-list.component';
 import {DropZoneComponent} from '../../image-uploader/drop-zone/drop-zone.component';
 import {ToastService} from '../../../services/toast.service';
+import {MosaicListComponent} from '../../mosaics/mosaic-list/mosaic-list.component';
 
 @Component({
     selector: 'app-project',
@@ -17,7 +18,8 @@ import {ToastService} from '../../../services/toast.service';
         RouterLink,
         ImageUploaderComponent,
         NgClass,
-        ImageListComponent
+        ImageListComponent,
+        MosaicListComponent
     ],
     templateUrl: './project.component.html',
     styleUrl: './project.component.css'
@@ -51,7 +53,7 @@ export class ProjectComponent {
             if (images.length === 0) {
                 this.toast.error('No target images available.');
             }
-            this.api.createJob(this.userName()!, this.projectId()!, images[0].imageId).subscribe({
+            this.api.createJob(this.userName()!, this.projectId()!, images[0].imageId, 300).subscribe({
                 next: (result) => console.log(result),
                 error: error => console.log(error),
             })

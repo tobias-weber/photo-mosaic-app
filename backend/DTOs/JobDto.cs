@@ -1,0 +1,15 @@
+﻿using backend.Models;
+
+namespace backend.DTOs;
+
+public class JobDto(Job job)
+{
+    public Guid JobId { get; init; } = job.JobId;
+    public DateTime StartedAt { get; set; } = job.StartedAt;
+    public DateTime FinishedAt { get; set; } = job.FinishedAt;
+    public JobStatus Status { get; set; } = job.Status;
+    public int N { get; set; } = job.N;
+    public string Algorithm {get; set;} = job.Algorithm;
+    public int Subdivisions { get; set; } = job.Subdivisions;
+    public Guid Target { get; set; } = job.TargetImageId;
+}

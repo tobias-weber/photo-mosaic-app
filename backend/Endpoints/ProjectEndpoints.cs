@@ -48,8 +48,8 @@ public static class ProjectEndpoints
             {
                 try
                 {
-                    var imageRef = await storage.GetImageRefAsync(userName, projectId, imageId);
-                    return Results.File(imageRef.FilePath, imageRef.ContentType, imageRef.Name);
+                    var (imageRef, absPath) = await storage.GetImageRefAsync(userName, projectId, imageId);
+                    return Results.File(absPath, imageRef.ContentType, imageRef.Name);
                 }
                 catch (FileNotFoundException ex)
                 {

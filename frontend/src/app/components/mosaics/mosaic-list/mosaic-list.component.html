@@ -1,0 +1,26 @@
+<div class="row">
+    @for (job of jobs(); track job.jobId) {
+        <div class="col-6 col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{job.jobId}}</h5>
+                    <p class="card-text">Status: {{job.status}}</p>
+                    <p class="card-text">Started: {{job.startedAt | date:'short'}}</p>
+
+                    @if (job.status === JobStatus.Finished) {
+                        <p class="card-text">Finished: {{job.finishedAt | date:'short'}}</p>
+
+                        @if (mosaic()?.jobId === job.jobId) {
+                            <div class="d-flex">
+                                    <img [src]="mosaic()?.url" class="mosaic-img rounded w-100" alt="Mosaic">
+                            </div>
+                        } @else {
+                            <button class="btn btn-primary" (click)="loadMosaic(job.jobId)">Show Mosaic</button>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+</div>

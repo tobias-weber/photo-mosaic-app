@@ -40,6 +40,8 @@ services:
       context: ./processing
       dockerfile: Dockerfile
     command: rq worker --url redis://redis:6379 default
+    environment:
+      - BASE_PATH=/app/storage/images
     depends_on:
       - redis
     volumes:

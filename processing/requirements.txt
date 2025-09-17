@@ -3,3 +3,6 @@ uvicorn
 redis
 rq
 requests
+Pillow
+numpy
+scipy

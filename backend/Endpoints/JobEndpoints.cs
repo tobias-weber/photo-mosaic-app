@@ -11,6 +11,43 @@ public static class JobEndpoints
         var group = routes.MapGroup("/users/{userName}/projects/{projectId:guid}/jobs")
             .RequireAuthorization("OwnerOrAdmin");
 
+        group.MapGet("/", async (string userName, Guid projectId, IProcessingService processing) =>
+        {
+            try
+            {
+                return Results.Ok(await processing.GetJobsAsync(userName, projectId));
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem(ex.Message);
+            }
+        });
+
+
+        // GET a specific mosaic
+        group.MapGet("/{jobId:guid}/mosaic",
+            (string userName, Guid projectId, Guid jobId, IImageStorageService storage) =>
+            {
+                if (!storage.MosaicExists(userName, projectId, jobId))
+                {
+                    return Results.NotFound();
+                }
+
+                try
+                {
+                    var absPath = storage.GetMosaicPath(userName, projectId, jobId);
+                    return Results.File(absPath, "image/jpeg", $"mosaic_{jobId}.jpg");
+                }
+                catch (FileNotFoundException ex)
+                {
+                    return Results.InternalServerError(ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    return Results.BadRequest(ex.Message);
+                }
+            });
+
         group.MapPost("/",
             async (string userName, Guid projectId, EnqueueJobDto request, AppDbContext db,
                 IProcessingService processing) =>
@@ -27,7 +64,6 @@ public static class JobEndpoints
             });
 
 
-        
         // Callbacks used by the processing containers
         var jobCallback = routes.MapGroup("/jobs");
 

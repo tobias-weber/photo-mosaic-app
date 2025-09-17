@@ -1,5 +1,5 @@
 import {Component, EventEmitter, inject, input, Output, signal, viewChild} from '@angular/core';
-import {concatMap, finalize, from, toArray} from 'rxjs';
+import {concatMap, delay, finalize, from, mergeMap, retry, tap, timeout, toArray} from 'rxjs';
 import {DropZoneComponent} from './drop-zone/drop-zone.component';
 import {ToastService} from '../../services/toast.service';
 import {ApiService} from '../../services/api.service';
@@ -25,6 +25,7 @@ export class ImageUploaderComponent {
 
     selectedFiles = signal<File[]>([]);
     isUploading = signal(false);
+    uploadCount = signal(0);
 
     onFilesSelected(files: File[]): void {
         this.selectedFiles.set(files);
@@ -35,25 +36,38 @@ export class ImageUploaderComponent {
             return;
         }
 
+        this.uploadCount.set(0);
         this.isUploading.set(true);
 
+        const uploadedFiles: File[] = [];
         from(this.selectedFiles()).pipe(
-            concatMap(file =>
-                this.api.uploadImage(this.targetUser(), this.projectId(), file, this.isSelectingTargets())
+            mergeMap(
+                file => this.api.uploadImage(this.targetUser(), this.projectId(), file, this.isSelectingTargets()).pipe(
+                    tap(() => {
+                        this.uploadCount.update(v => v + 1)
+                        uploadedFiles.push(file);
+                    }),
+                    retry({ count: 2, delay: 1000 })
+                ),
+                3
             ),
-            toArray(), // gathers all results once all uploads complete
             finalize(() => {
+                // cleanup
                 this.isUploading.set(false);
                 this.uploadFinished.emit();
             })
         ).subscribe({
-            next: (results) => {
-                this.toast.success(`${results.length} image${results.length > 1 ? 's' : ''} uploaded successfully.`);
-                this.dropZone()?.clearFiles();
-            },
             error: (err) => {
+                // 1 image and retries failed, aborting the rest
                 console.error('Upload failed:', err);
-                this.toast.error('Upload failed. Please check the console and try again.');
+                this.toast.error(`Upload failed: ${err.message}`);
+                if (this.uploadCount() > 0) {
+                    this.dropZone()?.removeFiles(uploadedFiles);
+                }
+            },
+            complete: () => {
+                this.toast.success(`${this.uploadCount()} image${this.uploadCount() > 1 ? 's' : ''} uploaded successfully.`);
+                this.dropZone()?.clearFiles();
             }
         });
     }

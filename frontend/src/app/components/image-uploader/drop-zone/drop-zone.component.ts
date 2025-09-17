@@ -2,9 +2,12 @@ import {
     Component,
     computed,
     ElementRef,
-    EventEmitter, HostBinding,
+    EventEmitter,
+    HostBinding,
     HostListener,
-    inject, input, OnDestroy,
+    inject,
+    input,
+    OnDestroy,
     Output,
     signal,
     viewChild
@@ -19,12 +22,12 @@ export interface FilePreview {
 }
 
 @Component({
-  selector: 'app-drop-zone',
-  imports: [],
-  templateUrl: './drop-zone.component.html',
-  styleUrl: './drop-zone.component.scss'
+    selector: 'app-drop-zone',
+    imports: [],
+    templateUrl: './drop-zone.component.html',
+    styleUrl: './drop-zone.component.scss'
 })
-export class DropZoneComponent implements OnDestroy{
+export class DropZoneComponent implements OnDestroy {
     protected readonly maxFiles = 500;
     private readonly maxPreviews = 250;
     protected readonly allowedFileTypes = [
@@ -100,7 +103,7 @@ export class DropZoneComponent implements OnDestroy{
         }
     }
 
-    onFileSelected(event: Event): void {
+    onFileSelected(event: Event) {
         const element = event.target as HTMLInputElement;
         const files = element.files;
         if (files && files.length > 0) {
@@ -108,7 +111,7 @@ export class DropZoneComponent implements OnDestroy{
         }
     }
 
-    private handleFiles(files: FileList | File[]): void {
+    private handleFiles(files: FileList | File[]) {
         if (files.length > this.maxFiles) {
             this.toast.warning(`At most ${this.maxFiles} images can be uploaded at once.`)
             return;
@@ -125,7 +128,7 @@ export class DropZoneComponent implements OnDestroy{
     }
 
     // Allow removing a single file from the preview list
-    removeFile(fileToRemove: FilePreview): void {
+    removeFile(fileToRemove: FilePreview) {
         if (fileToRemove.previewUrl) {
             URL.revokeObjectURL(fileToRemove.previewUrl as string)
         }
@@ -135,7 +138,22 @@ export class DropZoneComponent implements OnDestroy{
         this.filesSelected.emit(this.files().map(f => f.file));
     }
 
-    clearFiles(): void {
+    removeFiles(filesToRemove: File[]) {
+        this.files.update(previews =>
+            previews.filter(preview => {
+                if (filesToRemove.includes(preview.file)) {
+                    if (preview.previewUrl) {
+                        URL.revokeObjectURL(preview.previewUrl as string);
+                    }
+                    return false;
+                }
+                return true;
+            })
+        )
+        this.filesSelected.emit(this.files().map(f => f.file));
+    }
+
+    clearFiles() {
         // Revoke object URLs to prevent memory leaks
         this.files().forEach(f => URL.revokeObjectURL(f.previewUrl as string));
         this.files.set([]);

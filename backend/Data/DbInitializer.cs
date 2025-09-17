@@ -24,6 +24,14 @@ public class DbInitializer
         {
             await roleManager.CreateAsync(new IdentityRole<Guid>("User"));
         }
+        
+        // Create a default user
+        var user = new User { UserName = "user" };
+        if (await userManager.FindByNameAsync(user.UserName) == null && configuration["DefaultUser:Password"] is not null)
+        {
+            await userManager.CreateAsync(user, configuration["DefaultUser:Password"]!);
+            await userManager.AddToRoleAsync(user, "User");
+        }
 
         // Create a default admin user
         var adminUser = new User { UserName = "admin" };
@@ -32,5 +40,7 @@ public class DbInitializer
             await userManager.CreateAsync(adminUser, configuration["Admin:Password"]!);
             await userManager.AddToRoleAsync(adminUser, "Admin");
         }
+        
+        
     }
 }

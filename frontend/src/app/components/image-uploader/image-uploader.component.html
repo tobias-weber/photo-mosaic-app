@@ -7,7 +7,7 @@
                 [disabled]="isUploading()">
                 @if (isUploading()) {
                     <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                    <span class="ms-2" role="status">Uploading...</span>
+                    <span class="ms-2" role="status">Uploading ({{this.uploadCount()}} / {{this.selectedFiles().length}})...</span>
                 } @else {
                     <span>
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"

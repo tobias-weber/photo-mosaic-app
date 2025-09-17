@@ -15,8 +15,8 @@ BACKEND_CALLBACK_URL = os.getenv("BACKEND_CALLBACK_URL", "http://host.docker.int
 @app.post("/enqueue")
 async def enqueue_job(request: EnqueueJobRequest):
     try:
-        print(f"received request: {request}")
         queue.enqueue(process_job, request, BACKEND_CALLBACK_URL)
+        print(f"Enqueued {request.job_id}")
         return {"status": "enqueued", "job_id": request.job_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

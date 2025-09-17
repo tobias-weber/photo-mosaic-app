@@ -7,6 +7,8 @@ public interface IProcessingService
 {
     Task<Job> EnqueueJobAsync(string userName, Guid projectId, EnqueueJobDto request);
 
+    Task<List<JobDto>> GetJobsAsync(string userName, Guid projectId);
+
     Task CompleteJobAsync(Guid jobId);
 
     Task<bool> IsTokenValid(Guid jobId, Guid token);

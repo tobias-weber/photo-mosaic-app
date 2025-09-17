@@ -10,7 +10,8 @@ public enum JobStatus
     Submitted,
     Started,
     Finished,
-    Aborted
+    Aborted,
+    Failed
 }
 
 public class Job

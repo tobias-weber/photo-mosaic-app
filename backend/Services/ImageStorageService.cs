@@ -51,6 +51,11 @@ public class ImageStorageService : IImageStorageService
         }
 
         var imageId = Guid.NewGuid();
+        var relativePath = Path.Combine(
+            "users", userName,
+            "projects", projectId.ToString(),
+            $"{imageId}{Path.GetExtension(file.FileName)}"
+        ).Replace("\\", "/");
         var imageRef = new ImageRef
         {
             ImageId = imageId,
@@ -58,17 +63,13 @@ public class ImageStorageService : IImageStorageService
             ProjectId = projectId,
             Name = file.FileName,
             ContentType = file.ContentType,
-            FilePath = Path.Combine(
-                _uploadPath,
-                "users", userName,
-                "projects", projectId.ToString(),
-                $"{imageId}{Path.GetExtension(file.FileName)}"
-            )
+            FilePath = relativePath
         };
 
-        Directory.CreateDirectory(Path.GetDirectoryName(imageRef.FilePath)!);
+        var absPath = Path.Combine(_uploadPath, relativePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(absPath)!);
 
-        await using (var stream = new FileStream(imageRef.FilePath, FileMode.Create))
+        await using (var stream = new FileStream(absPath, FileMode.Create))
         {
             await file.CopyToAsync(stream);
         }
@@ -79,7 +80,7 @@ public class ImageStorageService : IImageStorageService
         return imageRef;
     }
 
-    public async Task<ImageRef> GetImageRefAsync(string userName, Guid projectId, Guid imageId)
+    public async Task<(ImageRef, string)> GetImageRefAsync(string userName, Guid projectId, Guid imageId)
     {
         await CheckIfProjectValid(userName, projectId);
         var imageRef = await _db.Images.FindAsync(imageId);
@@ -89,12 +90,14 @@ public class ImageStorageService : IImageStorageService
             throw new InvalidOperationException($"Image {imageId} does not exist.");
         }
 
-        if (!File.Exists(imageRef.FilePath))
+        
+        var absPath = Path.Combine(_uploadPath, imageRef.FilePath);
+        if (!File.Exists(absPath))
         {
             throw new FileNotFoundException($"Image {imageId} does not exist on disk.");
         }
         
-        return imageRef;
+        return (imageRef, absPath);
     }
 
     public async Task DeleteImageAsync(string userName, Guid projectId, Guid imageId)
@@ -106,9 +109,10 @@ public class ImageStorageService : IImageStorageService
             throw new InvalidOperationException($"Image {imageId} does not exist.");
         }
         // TODO: check if task uses image
-        if (File.Exists(imageRef.FilePath))
+        var absPath = Path.Combine(_uploadPath, imageRef.FilePath);
+        if (File.Exists(absPath))
         {
-            File.Delete(imageRef.FilePath);
+            File.Delete(absPath);
         }
         _db.Images.Remove(imageRef);
         await _db.SaveChangesAsync();
@@ -130,9 +134,10 @@ public class ImageStorageService : IImageStorageService
         foreach (var imageRef in imageRefs)
         {
             // TODO: check if task uses image
-            if (File.Exists(imageRef.FilePath))
+            var absPath = Path.Combine(_uploadPath, imageRef.FilePath);
+            if (File.Exists(absPath))
             {
-                File.Delete(imageRef.FilePath);
+                File.Delete(absPath);
             }
             _db.Images.Remove(imageRef);
         }
@@ -152,6 +157,20 @@ public class ImageStorageService : IImageStorageService
         };
 
         return await filtered.Select(i => new ImageRefDto(i)).ToListAsync();
+    }
+
+    public bool MosaicExists(string userName, Guid projectId, Guid jobId)
+    {
+        return File.Exists(GetMosaicPath(userName, projectId, jobId));
+    }
+
+    public string GetMosaicPath(string userName, Guid projectId, Guid jobId)
+    {
+        return Path.Combine(_uploadPath, 
+            "users", userName,
+            "projects", projectId.ToString(),
+            "mosaics",  jobId.ToString(),
+            "mosaic.jpg");
     }
 
     private async Task CheckIfProjectValid(string userName, Guid projectId)

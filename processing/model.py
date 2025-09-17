@@ -9,3 +9,4 @@ class EnqueueJobRequest(BaseModel):
     algorithm: str
     subdivisions: int
     target: str
+    tiles: list[str]
