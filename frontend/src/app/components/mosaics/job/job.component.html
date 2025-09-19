@@ -1,0 +1,28 @@
+<button class="btn btn-secondary mb-3" routerLink="/projects/{{projectId()}}">Back</button>
+
+
+@let j = job();
+@if (j) {
+    <h1>{{ j.startedAt | date:'short' }}</h1>
+    <div class="col-6 col-lg-4 mb-5">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ j.jobId }}</h5>
+                <p class="card-text">Number of Tiles: {{ j.n }}</p>
+                <p class="card-text">Subdivisions: {{ j.subdivisions }}</p>
+                <p class="card-text">Status: {{ JobStatus[j.status] }}</p>
+
+                @if (j.status === JobStatus.Finished) {
+                    <p class="card-text">Finished: {{ j.finishedAt | date:'short' }}</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    @if (mosaic()) {
+        <div class="d-flex justify-content-center">
+            <img [src]="mosaic()?.url" class="mosaic-img rounded w-75" alt="Mosaic">
+        </div>
+
+    }
+}

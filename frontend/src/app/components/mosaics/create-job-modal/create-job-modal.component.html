@@ -1,0 +1,105 @@
+<div class="modal-header">
+    <h4 class="modal-title">Generate Mosaic</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="activeModal.dismiss('Closed')"></button>
+</div>
+<div class="modal-body">
+    <form [formGroup]="form" (ngSubmit)="submit()">
+
+        <!-- Target ID -->
+        <div class="mb-3">
+            <label for="targetId" class="form-label">Target ID</label>
+            <input
+                type="text"
+                id="targetId"
+                class="form-control"
+                formControlName="targetId"
+                placeholder="Enter UUID"
+                [class.is-invalid]="tid.invalid && (tid.dirty || tid.touched)"
+            />
+            @if (tid.invalid && (tid.dirty || tid.touched)) {
+                <div class="invalid-feedback">
+                    Target ID is required.
+                </div>
+            }
+        </div>
+
+        <!-- N -->
+        <div class="mb-3">
+            <label for="n" class="form-label">Number of Tiles in Mosaic</label>
+            <input
+                type="number"
+                id="n"
+                class="form-control"
+                formControlName="n"
+                min="0"
+                max="9999"
+                [class.is-invalid]="n.invalid && (n.dirty || n.touched)"
+            />
+            @if (n.invalid && (n.dirty || n.touched)) {
+                <div class="invalid-feedback">
+                    @if (n.hasError('required')) {
+                        N is required.
+                    } @else if (n.hasError('min')) {
+                        Must be ≥ 0.
+                    } @else if (n.hasError('max')) {
+                        Must be ≤ {{ maxN }}.
+                    }
+                </div>
+            }
+            <div class="form-text">Enter 0 to automatically use the maximum number of tiles.</div>
+        </div>
+
+        <!-- Algorithm -->
+        <div class="mb-3">
+            <label for="algorithm" class="form-label">Algorithm</label>
+            <select
+                id="algorithm"
+                class="form-select"
+                formControlName="algorithm"
+                [class.is-invalid]="alg.invalid && (alg.dirty || alg.touched)"
+            >
+                <option value="LAP">LAP</option>
+            </select>
+            @if (alg.invalid && (alg.dirty || alg.touched)) {
+                <div class="invalid-feedback">
+                    Algorithm is required.
+                </div>
+            }
+        </div>
+
+        <!-- Subdivisions -->
+        <div class="mb-3">
+            <label for="subdivisions" class="form-label">Subdivisions</label>
+            <input
+                type="number"
+                id="subdivisions"
+                class="form-control"
+                formControlName="subdivisions"
+                min="1"
+                max="7"
+                [class.is-invalid]="sd.invalid && (sd.dirty || sd.touched)"
+            />
+            @if (sd.invalid && (sd.dirty || sd.touched)) {
+                <div class="invalid-feedback">
+                    @if (sd.hasError('required')) {
+                        Subdivisions are required.
+                    } @else if (sd.hasError('min')) {
+                        Must be at least 1.
+                    } @else if (sd.hasError('max')) {
+                        Cannot be more than {{ maxSubdivisions }}.
+                    }
+                </div>
+            }
+        </div>
+    </form>
+
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss('Closed')">Close</button>
+    <button type="button" class="btn btn-primary"
+            (click)="submit()"
+            [disabled]="form.invalid"
+    >Generate
+    </button>
+</div>
+

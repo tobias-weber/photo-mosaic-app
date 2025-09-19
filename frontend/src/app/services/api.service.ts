@@ -3,7 +3,7 @@ import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class ApiService {
 
@@ -24,7 +24,7 @@ export class ApiService {
     }
 
     register(userName: string, password: string) {
-        return this.http.post<AuthResponse>(`${this.BASE_URL}/register`, { userName, password });
+        return this.http.post<AuthResponse>(`${this.BASE_URL}/register`, {userName, password});
     }
 
     login(userName: string, password: string) {
@@ -74,7 +74,7 @@ export class ApiService {
     getImage(userName: string, projectId: string, imageId: string) {
         return this.http.get(
             `${this.BASE_URL}/users/${userName}/projects/${projectId}/images/${imageId}`,
-            { responseType: 'blob' } // important for binary data
+            {responseType: 'blob'} // important for binary data
         );
     }
 
@@ -89,24 +89,29 @@ export class ApiService {
 
 
     // Jobs
-    createJob(userName: string, projectId: string, targetId: string, n: number) {
+    createJob(userName: string, projectId: string, targetId: string, n: number, algorithm: 'LAP', subdivisions: number) {
         const body = {
-            algorithm: 'LAP',
-            subdivisions: 5,
+            algorithm: algorithm,
+            subdivisions: subdivisions,
             n: n,
             target: targetId
         }
-        return this.http.post(`${this.BASE_URL}/users/${userName}/projects/${projectId}/jobs`, body)
+        return this.http.post<Job>(`${this.BASE_URL}/users/${userName}/projects/${projectId}/jobs`, body)
     }
 
     getJobs(userName: string, projectId: string) {
         return this.http.get<Job[]>(`${this.BASE_URL}/users/${userName}/projects/${projectId}/jobs`);
     }
 
+
+    getJob(userName: string, projectId: string, jobId: string) {
+        return this.http.get<Job>(`${this.BASE_URL}/users/${userName}/projects/${projectId}/jobs/${jobId}`);
+    }
+
     getMosaic(userName: string, projectId: string, jobId: string) {
         return this.http.get(
             `${this.BASE_URL}/users/${userName}/projects/${projectId}/jobs/${jobId}/mosaic`,
-            { responseType: 'blob' } // important for binary data
+            {responseType: 'blob'} // important for binary data
         );
     }
 
@@ -115,8 +120,6 @@ export class ApiService {
     getUsers() {
         return this.http.get<User[]>(`${this.BASE_URL}/users`);
     }
-
-
 }
 
 export interface AuthResponse {

@@ -32,7 +32,9 @@ public class ProcessingService : IProcessingService
             Token = Guid.NewGuid(),
             ProjectId = projectId,
             Status = JobStatus.Created,
-            N = request.N,
+            N = request.N == 0
+                ? await _db.Images.Where(i => i.ProjectId == projectId && !i.IsTarget).CountAsync()
+                : request.N,
             Algorithm = request.Algorithm,
             Subdivisions = request.Subdivisions,
             TargetImageId = request.Target
@@ -106,6 +108,15 @@ public class ProcessingService : IProcessingService
         }
 
         await _db.SaveChangesAsync();
+    }
+
+    public async Task<JobDto?> GetJobAsync(string userName, Guid projectId, Guid jobId)
+    {
+        await CheckIfProjectValid(userName, projectId);
+        return await _db.Jobs
+            .Where(j => j.JobId == jobId && j.ProjectId == projectId)
+            .Select(j => new JobDto(j))
+            .FirstOrDefaultAsync();
     }
 
     public async Task<bool> IsTokenValid(Guid jobId, Guid token)

@@ -1,4 +1,4 @@
-import {inject, Injectable} from '@angular/core';
+import {inject, Injectable, TemplateRef} from '@angular/core';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {ConfirmModalComponent} from '../components/confirm-modal/confirm-modal.component';
 
@@ -23,6 +23,32 @@ export class ModalService {
             return true;
         } catch (e) {
             return false;
+        }
+    }
+
+    async openTemplateModal(content: TemplateRef<any>) {
+        const modalRef = this.ngbModal.open(content);
+        try {
+            return await modalRef.result;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async openComponentModal<T>(component: any, context?: Record<string, any>): Promise<T | null> {
+        const modalRef = this.ngbModal.open(component);
+        if (context) {
+            Object.entries(context).forEach(([key, value]) => {
+                if (key in modalRef.componentInstance) {
+                    (modalRef.componentInstance)[key] = value;
+                }
+            });
+        }
+
+        try {
+            return (await modalRef.result) as T;
+        } catch (e) {
+            return null;
         }
     }
 

@@ -22,6 +22,20 @@ public static class JobEndpoints
                 return Results.Problem(ex.Message);
             }
         });
+        
+        // Get a single Job
+        group.MapGet("/{jobId:guid}", async (string userName, Guid projectId, Guid jobId, IProcessingService processing) =>
+        {
+            try
+            {
+                var job = await processing.GetJobAsync(userName, projectId, jobId);
+                return job == null ? Results.NotFound() : Results.Ok(job);
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem(ex.Message);
+            }
+        });
 
 
         // GET a specific mosaic

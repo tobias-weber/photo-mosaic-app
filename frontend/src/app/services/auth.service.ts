@@ -1,7 +1,7 @@
 import {computed, inject, Injectable, signal} from '@angular/core';
 import {ApiService, AuthResponse} from './api.service';
 import {Router} from '@angular/router';
-import {filter, switchMap, tap} from 'rxjs';
+import {catchError, filter, of, switchMap, tap} from 'rxjs';
 import {toObservable, toSignal} from '@angular/core/rxjs-interop';
 
 
@@ -47,7 +47,13 @@ export class AuthService {
     user = toSignal(
         toObservable(this.userName).pipe(
             filter(userName => !!userName), // Only proceed if the username is not null
-            switchMap(userName => this.api.getUser(userName!)) // TODO: logout on error
+            switchMap(userName => this.api.getUser(userName!).pipe(
+                catchError(() => {
+                    // log out
+                    this.logout();
+                    return of(null);
+                })
+            ))
         )
     );
 

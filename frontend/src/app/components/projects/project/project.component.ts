@@ -1,15 +1,14 @@
 import {Component, inject, signal, viewChild} from '@angular/core';
 import {ApiService} from '../../../services/api.service';
 import {ActivatedRoute, RouterLink} from '@angular/router';
-import {rxResource, toObservable, toSignal} from '@angular/core/rxjs-interop';
+import {toObservable, toSignal} from '@angular/core/rxjs-interop';
 import {filter, switchMap} from 'rxjs';
 import {AuthService} from '../../../services/auth.service';
 import {DatePipe, NgClass} from '@angular/common';
 import {ImageUploaderComponent} from '../../image-uploader/image-uploader.component';
 import {ImageListComponent} from '../../image-list/image-list.component';
-import {DropZoneComponent} from '../../image-uploader/drop-zone/drop-zone.component';
 import {ToastService} from '../../../services/toast.service';
-import {MosaicListComponent} from '../../mosaics/mosaic-list/mosaic-list.component';
+import {JobListComponent} from '../../mosaics/job-list/job-list.component';
 
 @Component({
     selector: 'app-project',
@@ -19,7 +18,7 @@ import {MosaicListComponent} from '../../mosaics/mosaic-list/mosaic-list.compone
         ImageUploaderComponent,
         NgClass,
         ImageListComponent,
-        MosaicListComponent
+        JobListComponent
     ],
     templateUrl: './project.component.html',
     styleUrl: './project.component.css'
@@ -46,17 +45,5 @@ export class ProjectComponent {
         this.route.params.subscribe((params) => {
             this.projectId.set(params['projectId']);
         });
-    }
-
-    createMosaic() {
-        this.api.getImageRefs(this.userName()!, this.projectId()!, 'TARGETS').subscribe(images => {
-            if (images.length === 0) {
-                this.toast.error('No target images available.');
-            }
-            this.api.createJob(this.userName()!, this.projectId()!, images[0].imageId, 300).subscribe({
-                next: (result) => console.log(result),
-                error: error => console.log(error),
-            })
-        })
     }
 }
