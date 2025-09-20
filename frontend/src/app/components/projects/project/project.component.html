@@ -1,37 +1,40 @@
 <div class="mt-3">
     @if (project(); as p) {
-        <button class="btn btn-secondary mb-3" routerLink="/projects">View All</button>
+        <button class="btn btn-secondary mb-3" routerLink="../">View All</button>
         <h1>{{ p.title }}</h1>
         <p><small class="text-muted">Created at {{ p.createdAt | date:'short' }}</small></p>
 
         <div class="mt-5 mb-5">
             <h2>Mosaics</h2>
 
-            <app-job-list [targetUser]="userName()!" [projectId]="projectId()!"></app-job-list>
+            <app-job-list></app-job-list>
         </div>
 
         <div class="mb-3">
             <h2>Images</h2>
             <div class="btn-group mb-3" role="group">
                 <button type="button" class="btn" (click)="isSelectingTargets.set(true)"
-                        [ngClass]="{'btn-secondary': isSelectingTargets(), 'btn-outline-secondary': !isSelectingTargets()}">Targets</button>
+                        [ngClass]="{'btn-secondary': isSelectingTargets(), 'btn-outline-secondary': !isSelectingTargets()}">
+                    Targets
+                </button>
                 <button type="button" class="btn" (click)="isSelectingTargets.set(false)"
-                        [ngClass]="{'btn-secondary': !isSelectingTargets(), 'btn-outline-secondary': isSelectingTargets()}">Tiles</button>
+                        [ngClass]="{'btn-secondary': !isSelectingTargets(), 'btn-outline-secondary': isSelectingTargets()}">
+                    Tiles
+                </button>
             </div>
 
             @if (isSelectingTargets()) {
                 <h4>Add Target Image</h4>
-                <app-image-uploader (uploadFinished)="imageList()?.refresh()"
-                                    [isSelectingTargets]="isSelectingTargets()" [targetUser]="userName()!" [projectId]="p.projectId"></app-image-uploader>
+                <app-image-uploader [isSelectingTargets]="true">
+                </app-image-uploader>
             } @else {
                 <h4>Add Tiles</h4>
-                <app-image-uploader (uploadFinished)="imageList()?.refresh()"
-                                    [isSelectingTargets]="isSelectingTargets()" [targetUser]="userName()!" [projectId]="p.projectId"></app-image-uploader>
+                <app-image-uploader [isSelectingTargets]="false"></app-image-uploader>
             }
 
             <div class="mb-3">
                 <h4>Stored Images</h4>
-                <app-image-list [isSelectingTargets]="isSelectingTargets()" [targetUser]="userName()!" [projectId]="p.projectId"></app-image-list>
+                <app-image-list [isSelectingTargets]="isSelectingTargets()"></app-image-list>
 
             </div>
         </div>

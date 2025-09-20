@@ -6,6 +6,7 @@ import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ToastService} from '../../../services/toast.service';
 import {ModalService} from '../../../services/modal.service';
 import {Router, RouterLink} from '@angular/router';
+import {UserContextService} from '../../../services/user-context.service';
 
 @Component({
     selector: 'app-project-list',
@@ -21,13 +22,14 @@ export class ProjectListComponent implements OnInit {
     protected readonly maxTitleLength = 128;
 
     private auth = inject(AuthService);
+    private userContext = inject(UserContextService);
     private api = inject(ApiService);
     private fb = inject(FormBuilder);
     private toast = inject(ToastService);
     private modals = inject(ModalService);
     private router = inject(Router);
 
-    userName = this.auth.userName;
+    targetUser = this.userContext.targetUser;
     projects = signal<Project[]>([]);
 
 
@@ -45,7 +47,7 @@ export class ProjectListComponent implements OnInit {
     }
 
     loadProjects() {
-        const userName = this.userName();
+        const userName = this.targetUser();
         if (userName) {
             this.api.getProjects(userName).subscribe({
                 next: (res) => this.projects.set(res),
@@ -71,7 +73,7 @@ export class ProjectListComponent implements OnInit {
     async deleteProject(project: Project) {
         const msg = `Are you sure you want to delete the project "${project.title}" and all images and mosaics it contains?`;
         if (await this.modals.openConfirmModal(msg, 'Delete Project', 'Delete')) {
-            this.api.deleteProject(this.userName()!, project.projectId!).subscribe({
+            this.api.deleteProject(this.targetUser()!, project.projectId!).subscribe({
                 next: () => {
                     this.toast.success(`Deleted "${project.title}"`);
                     this.loadProjects();

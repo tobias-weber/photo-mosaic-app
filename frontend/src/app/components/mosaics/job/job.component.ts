@@ -1,9 +1,9 @@
 import {Component, effect, inject, OnDestroy, signal} from '@angular/core';
 import {ActivatedRoute, RouterLink} from '@angular/router';
 import {ApiService, Job, JobStatus} from '../../../services/api.service';
-import {AuthService} from '../../../services/auth.service';
 import {ToastService} from '../../../services/toast.service';
 import {DatePipe} from '@angular/common';
+import {ProjectService} from '../../../services/project.service';
 
 @Component({
     selector: 'app-job',
@@ -17,11 +17,11 @@ import {DatePipe} from '@angular/common';
 export class JobComponent implements OnDestroy {
     private route = inject(ActivatedRoute);
     private api = inject(ApiService);
-    private auth = inject(AuthService);
     private toast = inject(ToastService);
+    private projectService = inject(ProjectService);
 
-    username = this.auth.userName; // TODO: make target user independent of logged in user (for admins)
-    projectId = signal<string | null>(null);
+    username = this.projectService.targetUser;
+    projectId = this.projectService.projectId;
     jobId = signal<string | null>(null);
 
     job = signal<Job | null>(null);
@@ -31,10 +31,7 @@ export class JobComponent implements OnDestroy {
     protected readonly JobStatus = JobStatus;
 
     constructor() {
-        this.route.params.subscribe((params) => {
-            this.projectId.set(params['projectId']);
-            this.jobId.set(params['jobId']);
-        });
+        this.route.params.subscribe((params) => this.jobId.set(params['jobId']));
 
         effect(() => this.updateJob()); // ensure job signal is updated when the username, projectId or jobId changes
 
@@ -67,7 +64,7 @@ export class JobComponent implements OnDestroy {
     }
 
     private updateJob() {
-        this.api.getJob(this.auth.userName()!, this.projectId()!, this.jobId()!).subscribe({
+        this.api.getJob(this.username(), this.projectId()!, this.jobId()!).subscribe({
             next: job => this.job.set(job)
         })
     }

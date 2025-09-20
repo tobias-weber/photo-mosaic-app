@@ -1,8 +1,9 @@
-import {Component, EventEmitter, inject, input, Output, signal, viewChild} from '@angular/core';
-import {concatMap, delay, finalize, from, mergeMap, retry, tap, timeout, toArray} from 'rxjs';
+import {Component, inject, input, signal, viewChild} from '@angular/core';
+import {finalize, from, mergeMap, retry, tap} from 'rxjs';
 import {DropZoneComponent} from './drop-zone/drop-zone.component';
 import {ToastService} from '../../services/toast.service';
 import {ApiService} from '../../services/api.service';
+import {ProjectService} from '../../services/project.service';
 
 @Component({
     selector: 'app-image-uploader',
@@ -15,11 +16,11 @@ import {ApiService} from '../../services/api.service';
 export class ImageUploaderComponent {
     private toast = inject(ToastService);
     private api = inject(ApiService);
+    private project = inject(ProjectService);
 
     isSelectingTargets = input.required<boolean>();
-    targetUser = input.required<string>();
-    projectId = input.required<string>();
-    @Output() uploadFinished = new EventEmitter<void>();
+    targetUser = this.project.targetUser;
+    projectId = this.project.projectId;
 
     dropZone = viewChild(DropZoneComponent);
 
@@ -42,19 +43,19 @@ export class ImageUploaderComponent {
         const uploadedFiles: File[] = [];
         from(this.selectedFiles()).pipe(
             mergeMap(
-                file => this.api.uploadImage(this.targetUser(), this.projectId(), file, this.isSelectingTargets()).pipe(
+                file => this.api.uploadImage(this.targetUser(), this.projectId()!, file, this.isSelectingTargets()).pipe(
                     tap(() => {
                         this.uploadCount.update(v => v + 1)
                         uploadedFiles.push(file);
                     }),
-                    retry({ count: 2, delay: 1000 })
+                    retry({count: 2, delay: 1000})
                 ),
                 3
             ),
             finalize(() => {
                 // cleanup
                 this.isUploading.set(false);
-                this.uploadFinished.emit();
+                this.project.refreshImages();
             })
         ).subscribe({
             error: (err) => {

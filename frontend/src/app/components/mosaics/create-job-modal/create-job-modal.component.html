@@ -8,14 +8,16 @@
         <!-- Target ID -->
         <div class="mb-3">
             <label for="targetId" class="form-label">Target ID</label>
-            <input
-                type="text"
+            <select
                 id="targetId"
-                class="form-control"
+                class="form-select"
                 formControlName="targetId"
-                placeholder="Enter UUID"
                 [class.is-invalid]="tid.invalid && (tid.dirty || tid.touched)"
-            />
+            >
+                @for (img of targetImages; track img.imageId) {
+                    <option [value]="img.imageId">{{ img.name }}</option>
+                }
+            </select>
             @if (tid.invalid && (tid.dirty || tid.touched)) {
                 <div class="invalid-feedback">
                     Target ID is required.

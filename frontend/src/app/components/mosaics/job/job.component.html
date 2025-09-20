@@ -1,4 +1,4 @@
-<button class="btn btn-secondary mb-3" routerLink="/projects/{{projectId()}}">Back</button>
+<button class="btn btn-secondary mb-3" routerLink="../../">Back</button>
 
 
 @let j = job();
@@ -7,10 +7,9 @@
     <div class="col-6 col-lg-4 mb-5">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">{{ j.jobId }}</h5>
+                <h5 class="card-title">{{ JobStatus[j.status] }}</h5>
                 <p class="card-text">Number of Tiles: {{ j.n }}</p>
                 <p class="card-text">Subdivisions: {{ j.subdivisions }}</p>
-                <p class="card-text">Status: {{ JobStatus[j.status] }}</p>
 
                 @if (j.status === JobStatus.Finished) {
                     <p class="card-text">Finished: {{ j.finishedAt | date:'short' }}</p>

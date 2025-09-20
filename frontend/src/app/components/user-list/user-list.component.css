@@ -1,0 +1,3 @@
+.user-item:hover .user-name {
+    text-decoration: underline;
+}

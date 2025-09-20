@@ -8,12 +8,12 @@
             @for (project of projects(); track project.projectId) {
                 <button
                     class="list-group-item list-group-item-action d-flex justify-content-between align-items-center project-item"
-                    [routerLink]="'/projects/' + project.projectId">
+                    [routerLink]="[project.projectId]">
                     <span class="project-title">{{ project.title }}</span>
                     <div>
                         <small class="text-muted">{{ project.createdAt | date:'short' }}</small>
                         <button class="ms-3 btn btn-outline-danger"
-                                (click)="$event.stopPropagation(); deleteProject(project)">delete
+                                (click)="$event.stopPropagation(); deleteProject(project)">Delete
                         </button>
                     </div>
                 </button>

@@ -1,6 +1,7 @@
-import {Component, inject, Input} from '@angular/core';
+import {Component, inject, Input, OnInit} from '@angular/core';
 import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
+import {ImageRef} from '../../../services/api.service';
 
 @Component({
     selector: 'app-create-job-modal',
@@ -10,7 +11,7 @@ import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
     templateUrl: './create-job-modal.component.html',
     styleUrl: './create-job-modal.component.css'
 })
-export class CreateJobModalComponent {
+export class CreateJobModalComponent implements OnInit {
     protected readonly maxN = 9999;
     protected readonly maxSubdivisions = 7;
 
@@ -19,7 +20,7 @@ export class CreateJobModalComponent {
 
 
     @Input() projectId: string | null = null;
-    // TODO: ability to select target image from list of images, using a route-scoped ProjectService
+    @Input() targetImages: ImageRef[] = []; // TODO: target image previews and ability to start process by selecting target
 
 
     form = this.fb.group({
@@ -47,6 +48,12 @@ export class CreateJobModalComponent {
 
     get sd() {
         return this.form.get('subdivisions')!;
+    }
+
+    ngOnInit(): void {
+        if (this.targetImages.length > 0) {
+            this.tid.setValue(this.targetImages[0].imageId);
+        }
     }
 
     submit() {

@@ -1,0 +1,18 @@
+<p>user-list works!</p>
+
+<div class="list-group mt-3">
+    @for (user of users(); track user.userName) {
+        <button
+            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center user-item"
+            [routerLink]="[user.userName, 'projects']">
+            <span class="user-name">{{ user.userName }}</span>
+            <div>
+                <small class="text-muted">Created: {{ user.createdAt | date:'short' }}</small>
+                <button class="ms-3 btn btn-outline-danger"
+                        (click)="$event.stopPropagation(); deleteUser(user)">Delete
+                </button>
+            </div>
+        </button>
+
+    }
+</div>

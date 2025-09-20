@@ -16,6 +16,7 @@ export class NavbarComponent {
 
     isLoggedIn = this.auth.isLoggedIn; // signal
     user = this.auth.user;      // signal function returning payload
+    isAdmin = this.auth.isAdmin;
 
     logout() {
         this.auth.logout();
