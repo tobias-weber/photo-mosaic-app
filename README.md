@@ -19,6 +19,9 @@ This project demonstrates a **photo mosaic generator** built with:
 
 ![Architecture](/docs/images/photo-mosaic-app-architecture.png)
 
+### Note
+This project is under active development. Features are subject to change, some might be broken or are getting removed alltogether.
+
 ---
 
 ## 🚀 Running with Docker Compose
@@ -34,7 +37,7 @@ This project demonstrates a **photo mosaic generator** built with:
    cd photo-mosaic
    ```
 2. Optional: 
-      Change the private key used for JWT and default admin password (`adminPw`) to secure new values. This can be done by with environment variables in `docker-compose.yml`:
+      Change the private key used for JWT and default admin password (`adminPw`) to secure new values. This can be done with environment variables in `docker-compose.yml`:
     ```yml
     services:
       backend:
