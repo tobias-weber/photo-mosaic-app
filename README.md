@@ -1,18 +1,23 @@
 # Photo Mosaic Web App
 
+![Photo Mosaic](/docs/images/mountain-mosaic.jpg)
+
 This project demonstrates a **photo mosaic generator** built with:
 
-- **Backend** (`/backend`) — ASP.NET Core 9 Web API  
+- **Backend** (`/backend`): ASP.NET Core 9 Web API  
   Handles user requests, image uploads, mosaic generation orchestration, and stores metadata in SQLite + raw files on disk (`/backend/storage` during development).  
 
-- **Frontend** (`/frontend`) — Angular  
+- **Frontend** (`/frontend`): Angular  
   Provides the UI for uploading images, managing generation jobs, and displaying generated mosaics.  
   Served via Nginx, which also proxies `/backend-api/` requests to the backend container.
 
-- **Processing** (`/processing`) — Python  
+- **Processing** (`/processing`): Python  
   Computes the actual mosaics by relying a scalable number of worker containers (using the job queue package RQ).
   The backend enqueues a computation by sending a REST request to the python-api container.
   After processing is finished, a REST request is sent from the worker to the backend.  
+
+
+![Architecture](/docs/images/photo-mosaic-app-architecture.png)
 
 ---
 
