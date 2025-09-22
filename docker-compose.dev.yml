@@ -22,6 +22,7 @@ services:
     command: rq worker --url redis://redis:6379 default
     environment:
       - BASE_PATH=/app/images
+      - BACKEND_CALLBACK_URL=http://host.docker.internal:5243/jobs
     depends_on:
       - redis
     volumes:

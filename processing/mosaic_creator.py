@@ -27,8 +27,21 @@ from PIL import Image, ImageOps
 import numpy as np
 from scipy import optimize
 import math
-import random
+from enum import Enum
 
+class MosaicProgress(Enum):
+    """
+    Defines the descriptive states for the mosaic building process,
+    each with an associated float value representing completion.
+    """
+    def __init__(self, value, progress):
+        self._value_ = value
+        self.progress = progress
+    STARTED = (0, 0.05)
+    PREPARED_TILES = (1, 0.15)
+    COMPUTED_COSTS = (2, 0.50)
+    FOUND_ASSIGNMENT = (3, 0.90)
+    FINISHED = (4, 0.99)
 
 class Mosaic:
     def __init__(self, photo: Image, mosaic: Image, shape: tuple[int, int], assignment: np.ndarray):
@@ -117,16 +130,16 @@ class MosaicBuilder:
         return Mosaic(self.photo, mosaic, self.shape, assignment)
 
     def _build_mosaic(self, progress_callback=None):
-        progress_callback(0) if progress_callback else None
+        progress_callback(MosaicProgress.STARTED) if progress_callback else None
         tiles = self._get_tiles()
         tile_vals = self._get_tile_vals(tiles)
-        progress_callback(1) if progress_callback else None
+        progress_callback(MosaicProgress.PREPARED_TILES) if progress_callback else None
         C, C_choice = self._get_best_C(tile_vals)
-        progress_callback(2) if progress_callback else None
+        progress_callback(MosaicProgress.COMPUTED_COSTS) if progress_callback else None
         col_ind = self._get_assignment(C, C_choice)
-        progress_callback(3) if progress_callback else None
+        progress_callback(MosaicProgress.FOUND_ASSIGNMENT) if progress_callback else None
         mosaic = self._get_mosaic(tiles, col_ind)
-        progress_callback(4) if progress_callback else None
+        progress_callback(MosaicProgress.FINISHED) if progress_callback else None
         return mosaic, col_ind
 
     def _get_tiles(self):

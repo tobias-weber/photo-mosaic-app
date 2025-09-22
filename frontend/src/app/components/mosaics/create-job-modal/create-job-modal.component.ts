@@ -29,7 +29,7 @@ export class CreateJobModalComponent implements OnInit {
         algorithm: ['LAP', [Validators.required]],
 
         // LAP-specific controls:
-        subdivisions: [1, [Validators.required, Validators.min(1), Validators.max(this.maxSubdivisions)]]
+        subdivisions: [3, [Validators.required, Validators.min(1), Validators.max(this.maxSubdivisions)]]
     });
 
 

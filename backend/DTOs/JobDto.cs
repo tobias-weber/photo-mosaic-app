@@ -8,6 +8,7 @@ public class JobDto(Job job)
     public DateTime StartedAt { get; set; } = job.StartedAt;
     public DateTime FinishedAt { get; set; } = job.FinishedAt;
     public JobStatus Status { get; set; } = job.Status;
+    public double Progress { get; set; } = job.Progress;
     public int N { get; set; } = job.N;
     public string Algorithm {get; set;} = job.Algorithm;
     public int Subdivisions { get; set; } = job.Subdivisions;

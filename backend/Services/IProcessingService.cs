@@ -10,8 +10,9 @@ public interface IProcessingService
     Task<List<JobDto>> GetJobsAsync(string userName, Guid projectId);
     
     Task<JobDto?> GetJobAsync(string userName, Guid projectId, Guid jobId);
-
-    Task CompleteJobAsync(Guid jobId);
+    
+    Task UpdateStatus(Guid jobId, JobStatus status, double? progress);
 
     Task<bool> IsTokenValid(Guid jobId, Guid token);
+    Task DeleteJobAsync(string userName, Guid projectId, Guid jobId);
 }

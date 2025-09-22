@@ -30,6 +30,7 @@ export interface FilePreview {
 export class DropZoneComponent implements OnDestroy {
     protected readonly maxFiles = 500;
     private readonly maxPreviews = 250;
+    private readonly maxFileSize = 10 * 1024 * 1024;
     protected readonly allowedFileTypes = [
         'image/jpeg',
         'image/png',
@@ -78,7 +79,7 @@ export class DropZoneComponent implements OnDestroy {
         const files = event.dataTransfer?.files;
         if (files && files.length > 0) {
             let allowedFiles = Array.from(files)
-                .filter(file => this.allowedFileTypes.includes(file.type));
+                .filter(file => this.allowedFileTypes.includes(file.type) && file.size <= this.maxFileSize);
             const removedCount = files.length - allowedFiles.length;
             if (removedCount > 0) {
                 this.toast.warning(`${removedCount} file(s) with unsupported types have been excluded.`)

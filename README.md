@@ -71,3 +71,13 @@ Other notes:
 - Processing Python API runs on `http://localhost:8000`
 
 ---
+
+## Third-Party Libraries / Acknowledgements
+This project is MIT licensed. In particular, it uses the following third-party libraries:
+- libvips – LGPL-2.1. https://github.com/libvips/libvips
+
+- OpenSeadragon – BSD-3 license. https://openseadragon.github.io/
+
+- ImageSharp – Apache 2.0 license. https://github.com/SixLabors/ImageSharp
+
+- SciPy - BSD-3 license. https://github.com/scipy/scipy

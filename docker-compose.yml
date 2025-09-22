@@ -42,6 +42,7 @@ services:
     command: rq worker --url redis://redis:6379 default
     environment:
       - BASE_PATH=/app/storage/images
+      - BACKEND_CALLBACK_URL=http://backend:8080/jobs
     depends_on:
       - redis
     volumes:

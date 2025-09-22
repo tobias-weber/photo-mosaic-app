@@ -1,4 +1,4 @@
-import {Component, inject, OnDestroy, signal, Signal} from '@angular/core';
+import {Component, effect, inject, OnDestroy, signal, Signal, untracked} from '@angular/core';
 import {ToastService} from '../../../services/toast.service';
 import {ApiService, Job, JobStatus} from '../../../services/api.service';
 import {ModalService} from '../../../services/modal.service';
@@ -29,7 +29,7 @@ export class JobListComponent implements OnDestroy {
     projectId = this.projectService.projectId;
     private refreshTrigger = signal(false);
 
-    mosaic = signal<{ url: string, jobId: string } | null>(null);
+    mosaics = signal<Record<string, { url: string }>>({});
 
     jobs: Signal<Job[]> = toSignal(
         combineLatest([
@@ -43,12 +43,35 @@ export class JobListComponent implements OnDestroy {
     );
     protected readonly JobStatus = JobStatus;
 
-    loadMosaic(jobId: string) {
-        this.mosaic.set(null);
+    constructor() {
+        effect(() => {
+            const jobIds = this.jobs().map(j => j.jobId);
+            const oldMosaics = untracked(this.mosaics);
+            const mosaics: Record<string, { url: string }> = {};
+            const missingMosaics: string[] = [];
+            for (const jobId of jobIds) {
+                if (oldMosaics[jobId]) {
+                    mosaics[jobId] = oldMosaics[jobId];
+                } else {
+                    missingMosaics.push(jobId);
+                }
+            }
+
+            [...Object.entries(oldMosaics)].filter(([id]) => !jobIds.includes(id))
+                .forEach(([, val]) => URL.revokeObjectURL(val.url));
+            this.mosaics.set(mosaics);
+
+            missingMosaics.forEach(id => this.loadMosaic(id));
+
+        });
+    }
+
+    private loadMosaic(jobId: string) {
         this.api.getMosaic(this.targetUser(), this.projectId()!, jobId).subscribe({
             next: blob => {
-                this.mosaic.set(
-                    {url: URL.createObjectURL(blob), jobId}
+                this.mosaics.update(oldMosaics => (
+                        {...oldMosaics, [jobId]: {url: URL.createObjectURL(blob)}}
+                    )
                 );
             },
             error: err => this.toast.error(`Failed to load image: ${err.message}`),
@@ -59,11 +82,13 @@ export class JobListComponent implements OnDestroy {
         this.router.navigate([`./j/${jobId}`], {relativeTo: this.route});
     }
 
-    private revokeMosaic() {
-        if (this.mosaic()) {
-            URL.revokeObjectURL(this.mosaic()?.url!);
-        }
-        this.mosaic.set(null);
+    triggerRefresh() {
+        this.refreshTrigger.update(v => !v);
+    }
+
+    private revokeMosaics() {
+        [...Object.entries(this.mosaics())]
+            .forEach(([, val]) => URL.revokeObjectURL(val.url));
     }
 
     async createJob() {
@@ -95,6 +120,18 @@ export class JobListComponent implements OnDestroy {
 
 
     ngOnDestroy(): void {
-        this.revokeMosaic();
+        this.revokeMosaics();
+    }
+
+    async deleteJob(jobId: string) {
+        if (await this.modals.openConfirmModal("Do you really want to delete this mosaic?", "Delete Mosaic")) {
+            this.api.deleteJob(this.targetUser(), this.projectId()!, jobId).subscribe({
+                next: () => {
+                    this.toast.success("Successfully deleted mosaic");
+                    this.triggerRefresh();
+                },
+                error: (err) => this.toast.error(`Unable to delete mosaic: ${err.message}`)
+            })
+        }
     }
 }

@@ -1,15 +1,29 @@
-import {Component, effect, inject, OnDestroy, signal} from '@angular/core';
+import {Component, computed, effect, inject, OnDestroy, signal} from '@angular/core';
 import {ActivatedRoute, RouterLink} from '@angular/router';
 import {ApiService, Job, JobStatus} from '../../../services/api.service';
 import {ToastService} from '../../../services/toast.service';
 import {DatePipe} from '@angular/common';
 import {ProjectService} from '../../../services/project.service';
+import {MosaicViewerComponent} from '../mosaic-viewer/mosaic-viewer.component';
+import {NgbProgressbar} from '@ng-bootstrap/ng-bootstrap';
+
+const statusTexts: Record<JobStatus, string> = {
+    [JobStatus.Created]: 'Initializing...',
+    [JobStatus.Submitted]: 'Initializing...',
+    [JobStatus.Processing]: 'Computing optimal mosaic...',
+    [JobStatus.GeneratedPreview]: 'Assembling mosaic...',
+    [JobStatus.Finished]: 'Finished',
+    [JobStatus.Aborted]: 'Aborted',
+    [JobStatus.Failed]: 'Failed',
+};
 
 @Component({
     selector: 'app-job',
     imports: [
         DatePipe,
-        RouterLink
+        RouterLink,
+        MosaicViewerComponent,
+        NgbProgressbar
     ],
     templateUrl: './job.component.html',
     styleUrl: './job.component.css'
@@ -25,8 +39,14 @@ export class JobComponent implements OnDestroy {
     jobId = signal<string | null>(null);
 
     job = signal<Job | null>(null);
+    targetImageId = computed(() => this.job()?.target)
+    targetImage = signal<{ url: string } | null>(null);
+    hasPreview = computed(() => this.job() && [JobStatus.GeneratedPreview, JobStatus.Finished].includes(this.job()!.status))
+    isComplete = computed(() => this.job() && [JobStatus.Finished, JobStatus.Failed, JobStatus.Aborted].includes(this.job()!.status))
     jobRefreshInterval: number;
     mosaic = signal<{ url: string } | null>(null);
+
+    statusText = computed(() => statusTexts[this.job()?.status ?? JobStatus.Created]);
 
     protected readonly JobStatus = JobStatus;
 
@@ -35,15 +55,28 @@ export class JobComponent implements OnDestroy {
 
         effect(() => this.updateJob()); // ensure job signal is updated when the username, projectId or jobId changes
 
-        effect(() => { // fetch mosaic when job is finished
-            if (this.job()?.status === JobStatus.Finished) {
+        effect(() => {
+            if (this.targetImageId()) {
+                this.api.getImage(this.username()!, this.projectId()!, this.targetImageId()!).subscribe({
+                    next: blob => {
+                        this.revokeTargetImage();
+                        this.targetImage.set({url: URL.createObjectURL(blob)});
+                    },
+                    error: err => this.toast.error(`Failed to load target image: ${err.message}`),
+                })
+            } else {
+                this.targetImage.set(null);
+            }
+        });
+
+        effect(() => { // fetch mosaic when job preview exists
+            if (this.hasPreview()) {
                 this.api.getMosaic(this.username()!, this.projectId()!, this.jobId()!).subscribe({
                     next: blob => {
-                        this.mosaic.set(
-                            {url: URL.createObjectURL(blob)}
-                        );
+                        this.revokeMosaic();
+                        this.mosaic.set({url: URL.createObjectURL(blob)});
                     },
-                    error: err => this.toast.error(`Failed to load image: ${err.message}`),
+                    error: err => this.toast.error(`Failed to load mosaic: ${err.message}`),
                 })
             } else {
                 this.mosaic.set(null);
@@ -69,6 +102,13 @@ export class JobComponent implements OnDestroy {
         })
     }
 
+    private revokeTargetImage() {
+        if (this.targetImage()) {
+            URL.revokeObjectURL(this.targetImage()?.url!);
+        }
+        this.targetImage.set(null);
+    }
+
     private revokeMosaic() {
         if (this.mosaic()) {
             URL.revokeObjectURL(this.mosaic()?.url!);
@@ -77,6 +117,7 @@ export class JobComponent implements OnDestroy {
     }
 
     ngOnDestroy(): void {
+        this.revokeTargetImage();
         this.revokeMosaic();
         clearInterval(this.jobRefreshInterval);
     }

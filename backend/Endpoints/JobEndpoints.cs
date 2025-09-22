@@ -22,20 +22,21 @@ public static class JobEndpoints
                 return Results.Problem(ex.Message);
             }
         });
-        
+
         // Get a single Job
-        group.MapGet("/{jobId:guid}", async (string userName, Guid projectId, Guid jobId, IProcessingService processing) =>
-        {
-            try
+        group.MapGet("/{jobId:guid}",
+            async (string userName, Guid projectId, Guid jobId, IProcessingService processing) =>
             {
-                var job = await processing.GetJobAsync(userName, projectId, jobId);
-                return job == null ? Results.NotFound() : Results.Ok(job);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem(ex.Message);
-            }
-        });
+                try
+                {
+                    var job = await processing.GetJobAsync(userName, projectId, jobId);
+                    return job == null ? Results.NotFound() : Results.Ok(job);
+                }
+                catch (Exception ex)
+                {
+                    return Results.Problem(ex.Message);
+                }
+            });
 
 
         // GET a specific mosaic
@@ -51,6 +52,30 @@ public static class JobEndpoints
                 {
                     var absPath = storage.GetMosaicPath(userName, projectId, jobId);
                     return Results.File(absPath, "image/jpeg", $"mosaic_{jobId}.jpg");
+                }
+                catch (FileNotFoundException ex)
+                {
+                    return Results.InternalServerError(ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    return Results.BadRequest(ex.Message);
+                }
+            });
+
+        // get the dzi version of the mosaic
+        group.MapGet("/{jobId:guid}/dz/{**filePath}",
+            (string userName, Guid projectId, Guid jobId, string filePath, IImageStorageService storage) =>
+            {
+                if (!storage.DeepZoomExists(userName, projectId, jobId)) // TODO: better check for dz version existence
+                {
+                    return Results.NotFound();
+                }
+
+                try
+                {
+                    var (absPath, contentType) = storage.GetDeepZoomPath(userName, projectId, jobId, filePath);
+                    return Results.File(absPath, contentType);
                 }
                 catch (FileNotFoundException ex)
                 {
@@ -78,20 +103,42 @@ public static class JobEndpoints
             });
 
 
+        // Delete a single Job
+        group.MapDelete("/{jobId:guid}",
+            async (string userName, Guid projectId, Guid jobId, IProcessingService processing) =>
+            {
+                try
+                {
+                    await processing.DeleteJobAsync(userName, projectId, jobId);
+                    return Results.Ok();
+                }
+                catch (Exception ex)
+                {
+                    return Results.Problem(ex.Message);
+                }
+            });
+
+
         // Callbacks used by the processing containers
         var jobCallback = routes.MapGroup("/jobs");
 
-        jobCallback.MapPost("/{jobId:guid}/complete",
-            async (Guid jobId, HttpRequest request, AppDbContext db, IProcessingService processing) =>
+        jobCallback.MapPost("/{jobId:guid}/status",
+            async (Guid jobId, JobStatusDto status, HttpRequest request, IProcessingService processing) =>
             {
                 if (
                     !request.Headers.TryGetValue("X-Job-Secret", out var headerValue) ||
                     !await processing.IsTokenValid(jobId, Guid.Parse(headerValue!))
                 ) return Results.Unauthorized();
 
-                await processing.CompleteJobAsync(jobId);
-                Console.WriteLine($"Successful callback from {jobId}");
-                return Results.Ok();
+                try
+                {
+                    await processing.UpdateStatus(jobId, status.Status, status.Progress);
+                    return Results.Ok();
+                }
+                catch (Exception ex)
+                {
+                    return Results.Problem(ex.Message);
+                }
             });
     }
 }

@@ -115,6 +115,13 @@ export class ApiService {
         );
     }
 
+    deleteJob(userName: string, projectId: string, jobId: string) {
+        return this.http.delete<void>(`${this.BASE_URL}/users/${userName}/projects/${projectId}/jobs/${jobId}`);
+    }
+
+    constructDzUrl(userName: string, projectId: string, jobId: string) {
+        return `${this.BASE_URL}/users/${userName}/projects/${projectId}/jobs/${jobId}/dz/dz.jpg.dzi`;
+    }
 
     // Admin Endpoints
     getUsers() {
@@ -150,6 +157,7 @@ export interface Job {
     startedAt: Date;
     finishedAt: Date;
     status: JobStatus;
+    progress: number; // [0, 1] and only relevant if status === Processing
     n: number;
     algorithm: string;
     subdivisions?: number;
@@ -159,8 +167,9 @@ export interface Job {
 export enum JobStatus {
     'Created' = 0,
     'Submitted' = 1,
-    'Started' = 2,
-    'Finished' = 3,
-    'Aborted' = 4,
-    'Failed' = 5,
+    'Processing' = 2,
+    'GeneratedPreview' = 3,
+    'Finished' = 4,
+    'Aborted' = 5,
+    'Failed' = 6,
 }

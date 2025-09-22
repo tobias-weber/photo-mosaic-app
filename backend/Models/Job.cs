@@ -8,7 +8,8 @@ public enum JobStatus
 {
     Created,
     Submitted,
-    Started,
+    Processing,
+    GeneratedPreview,
     Finished,
     Aborted,
     Failed
@@ -21,7 +22,8 @@ public class Job
     public DateTime StartedAt { get; init; }
     public DateTime FinishedAt { get; set; }
     public JobStatus Status { get; set; }
-    
+    [Range(0.0, 1.0, ErrorMessage = "The progress must be between 0 and 1.")] 
+    public double Progress { get; set; }
     public int N { get; init; }
     [MaxLength(64)]
     public string Algorithm {get; init;} = null!;
