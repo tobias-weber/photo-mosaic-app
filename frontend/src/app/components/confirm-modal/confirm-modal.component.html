@@ -7,5 +7,6 @@
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss('Closed')">Close</button>
-    <button type="button" class="btn btn-danger" (click)="activeModal.close('Confirmed')">{{ btnText }}</button>
+    <button type="button" class="btn" [ngClass]="btnClass" (click)="activeModal.close('Confirmed')">{{ btnText }}
+    </button>
 </div>

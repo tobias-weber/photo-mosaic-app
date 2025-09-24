@@ -69,7 +69,19 @@ public class ProcessingService : IProcessingService
         _db.Jobs.Add(job);
         await _db.SaveChangesAsync();
 
-        var response = await _httpClient.PostAsJsonAsync("/enqueue", payload);
+        HttpResponseMessage response;
+        try
+        {
+            response = await _httpClient.PostAsJsonAsync("/enqueue", payload);
+            if (!response.IsSuccessStatusCode)
+                throw new HttpRequestException($"Request failed with status {response.StatusCode}");
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            _db.Jobs.Remove(job);
+            await _db.SaveChangesAsync();
+            throw new HttpRequestException("Unable to reach processing service.");
+        }
 
         if (!response.IsSuccessStatusCode) throw new HttpRequestException(await response.Content.ReadAsStringAsync());
 
@@ -159,7 +171,7 @@ public class ProcessingService : IProcessingService
         await CheckIfProjectValid(userName, projectId);
         var job = await _db.Jobs.FirstOrDefaultAsync(j => j.JobId == jobId && j.ProjectId == projectId);
         if (job is null) throw new InvalidOperationException($"Job {jobId} does not exist.");
-        if (job.Status != JobStatus.Finished && job.Status != JobStatus.Aborted && job.Status != JobStatus.Failed) 
+        if (job.Status is not (JobStatus.Finished or JobStatus.Aborted or JobStatus.Failed)) 
             throw new InvalidOperationException($"Job {jobId} is still active.");
         
         _storage.DeleteMosaic(userName, job.ProjectId, jobId);

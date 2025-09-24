@@ -70,6 +70,10 @@ export class AuthService {
         )
     }
 
+    guestLogin() {
+        return this.login('guest', '')
+    }
+
     logout() {
         localStorage.removeItem(tokenKey);
         localStorage.removeItem(this.expirationKey);

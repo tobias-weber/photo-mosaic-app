@@ -3,7 +3,7 @@ import {ToastService} from '../../../services/toast.service';
 import {ApiService, Job, JobStatus} from '../../../services/api.service';
 import {ModalService} from '../../../services/modal.service';
 import {toObservable, toSignal} from '@angular/core/rxjs-interop';
-import {combineLatest, switchMap} from 'rxjs';
+import {combineLatest, finalize, switchMap} from 'rxjs';
 import {DatePipe} from '@angular/common';
 import {ActivatedRoute, Router} from '@angular/router';
 import {CreateJobModalComponent} from '../create-job-modal/create-job-modal.component';
@@ -28,6 +28,7 @@ export class JobListComponent implements OnDestroy {
     targetUser = this.projectService.targetUser;
     projectId = this.projectService.projectId;
     private refreshTrigger = signal(false);
+    isCreating = signal(false);
 
     mosaics = signal<Record<string, { url: string }>>({});
 
@@ -104,15 +105,19 @@ export class JobListComponent implements OnDestroy {
                 targetImages: this.projectService.targetImageRefs()
             });
         if (result) {
-            this.api.createJob(this.targetUser(), this.projectId()!,
-                result.targetId, result.n, result.algorithm, result.subdivisions).subscribe({
+            this.isCreating.set(true);
+            this.api.createJob(
+                this.targetUser(), this.projectId()!, result.targetId, result.n, result.algorithm, result.subdivisions)
+                .pipe(
+                    finalize(() => this.isCreating.set(false))
+                ).subscribe({
                     next: (job) => {
                         this.toast.success('Generating mosaic...');
                         this.router.navigate([`j/${job.jobId}`], {relativeTo: this.route});
                     },
                     error: error => {
                         this.toast.error(`Unable to start mosaic generation: ${error.message}`);
-                    },
+                    }
                 }
             )
         }

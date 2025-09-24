@@ -1,6 +1,13 @@
 <div class="row row-gap-4">
     <div>
-        <button class="btn btn-primary mb-3" (click)="createJob()">Create New</button>
+        <button class="btn btn-primary mb-3" (click)="createJob()" [disabled]="isCreating()">
+            @if (isCreating()) {
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                <span role="status">Creating...</span>
+            } @else {
+                Create New
+            }
+        </button>
     </div>
 
     @for (job of jobs(); track job.jobId) {

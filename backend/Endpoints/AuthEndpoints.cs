@@ -1,4 +1,5 @@
-﻿using backend.DTOs;
+﻿using backend.Data;
+using backend.DTOs;
 using backend.Helpers;
 using backend.Models;
 using Microsoft.AspNetCore.Identity;
@@ -26,9 +27,11 @@ public static class AuthEndpoints
         // Login Endpoint
         routes.MapPost("/login", async (LoginDto request, SignInManager<User> signInManager, IConfiguration config, UserManager<User> userManager) =>
         {
-            var result = await signInManager.PasswordSignInAsync(request.UserName, request.Password, isPersistent: false, lockoutOnFailure: false);
-
-            if (!result.Succeeded) return Results.Unauthorized();
+            if (request.UserName != DbInitializer.GuestUserName)
+            {
+                var result = await signInManager.PasswordSignInAsync(request.UserName, request.Password, isPersistent: false, lockoutOnFailure: false);
+                if (!result.Succeeded) return Results.Unauthorized();
+            }
             
             var user = await userManager.FindByNameAsync(request.UserName);
             var authResult = await AuthHelper.GenerateTokenAsync(user!, config, userManager);

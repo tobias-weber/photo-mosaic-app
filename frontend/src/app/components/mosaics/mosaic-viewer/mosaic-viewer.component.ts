@@ -37,8 +37,8 @@ export class MosaicViewerComponent implements OnInit, OnDestroy {
             element: this.host.nativeElement.querySelector('div')!,
             tileSources: ts,
             prefixUrl: '//openseadragon.github.io/openseadragon/images/', // where OSD button images live
-            minZoomLevel: 0,
-            maxZoomLevel: 14,
+            minZoomImageRatio: 0.25,
+            maxZoomPixelRatio: 2,
             defaultZoomLevel: 0,
             showNavigator: true,
             ajaxHeaders: {

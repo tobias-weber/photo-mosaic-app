@@ -61,6 +61,7 @@ builder.Services
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"))
     .AddPolicy("UserPolicy", policy => policy.RequireRole("User"))
+    .AddPolicy("GuestPolicy", policy => policy.RequireRole("Guest"))
     .AddPolicy("OwnerOrAdmin", policy => policy.RequireAssertion(context =>
         {
             if (context.User.IsInRole("Admin"))
@@ -126,7 +127,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Seed the database with roles and a default admin user
-await DbInitializer.SeedRolesAndAdminAsync(app);
+await DbInitializer.SeedRolesAndUsersAsync(app);
 
 // Add the authentication middleware
 app.UseAuthentication();

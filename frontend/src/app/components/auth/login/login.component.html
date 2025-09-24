@@ -1,35 +1,42 @@
-<div class="card p-4">
-    <h3>Login</h3>
-    @if (auth.isLoggedIn()) {
-        <div class="mb-3">
-            You are already logged in.
-        </div>
-
-        <div>
-            <button class="btn btn-primary" (click)="logout()">Log out</button>
-        </div>
-    } @else {
-        <form [formGroup]="form" (ngSubmit)="submit()" class="mb-3">
+<div class="row justify-content-center">
+    <div class="card mt-5 p-3 col-12 col-lg-4">
+        <h3>Login</h3>
+        @if (auth.isLoggedIn()) {
             <div class="mb-3">
-                <label class="form-label">Username</label>
-                <input class="form-control" formControlName="username" autocomplete="username"/>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Password</label>
-                <input type="password" class="form-control" formControlName="password" autocomplete="current-password"/>
+                You are already logged in.
             </div>
 
-            @if (error()) {
-                <div class="alert alert-danger">{{ error() }}</div>
-            }
+            <div>
+                <button class="btn btn-primary" (click)="logout()">Log out</button>
+            </div>
+        } @else {
+            <form [formGroup]="form" (ngSubmit)="submit()" class="mb-3">
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input class="form-control" formControlName="username" autocomplete="username"/>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" formControlName="password"
+                           autocomplete="current-password"/>
+                </div>
 
-            <button type="submit" class="btn btn-primary w-100" [disabled]="form.invalid">
-                Login
-            </button>
-        </form>
+                @if (error()) {
+                    <div class="alert alert-danger">{{ error() }}</div>
+                }
 
-        <div>
-            <span>Have no account? <a routerLink="/register">Register here.</a></span>
-        </div>
-    }
+                <button type="submit" class="btn btn-primary w-100" [disabled]="form.invalid">
+                    Login
+                </button>
+            </form>
+
+
+            <div class="d-flex flex-column align-items-center">
+                <button class="btn btn-outline-secondary w-100 mb-3" (click)="loginAsGuest()">
+                    Continue as Guest
+                </button>
+                <span>Have no account? <a routerLink="/register">Register here.</a></span>
+            </div>
+        }
+    </div>
 </div>

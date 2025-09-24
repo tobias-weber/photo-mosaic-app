@@ -8,7 +8,7 @@ import {ConfirmModalComponent} from '../components/confirm-modal/confirm-modal.c
 export class ModalService {
     private ngbModal = inject(NgbModal);
 
-    async openConfirmModal(message: string, title?: string, btnText?: string): Promise<boolean> {
+    async openConfirmModal(message: string, title?: string, btnText?: string, btnClass?: string): Promise<boolean> {
         const modalRef = this.ngbModal.open(ConfirmModalComponent);
         modalRef.componentInstance.message = message;
         if (title) {
@@ -16,6 +16,9 @@ export class ModalService {
         }
         if (btnText) {
             modalRef.componentInstance.btnText = btnText;
+        }
+        if (btnClass) {
+            modalRef.componentInstance.btnClass = btnClass;
         }
 
         try {
