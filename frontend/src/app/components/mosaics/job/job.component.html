@@ -38,6 +38,10 @@
         <div class="d-flex justify-content-center preview-container mb-3">
             <img [src]="targetImage()?.url" class="full-width-img" alt="Target">
         </div>
+    } @else if (j.status === JobStatus.Failed) {
+        <div class="alert alert-danger" role="alert">
+            The mosaic creation has failed. Please try again.
+        </div>
     }
 
     <div class="col-6 col-lg-4 mb-5">
@@ -46,6 +50,8 @@
                 <h5 class="card-title">{{ JobStatus[j.status] }}</h5>
                 <p class="card-text">Number of Tiles: {{ j.n }}</p>
                 <p class="card-text">Subdivisions: {{ j.subdivisions }}</p>
+                <p class="card-text">Repetitions: {{ j.repetitions }}</p>
+                <p class="card-text">Crop Count: {{ j.cropCount }}</p>
 
                 @if (isComplete()) {
                     <p class="card-text">Finished: {{ j.finishedAt | date:'short' }}</p>

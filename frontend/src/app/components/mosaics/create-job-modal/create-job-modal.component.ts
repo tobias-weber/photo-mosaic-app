@@ -1,12 +1,14 @@
-import {Component, inject, Input, OnInit} from '@angular/core';
+import {Component, inject, Input, OnInit, signal} from '@angular/core';
 import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ImageRef} from '../../../services/api.service';
+import {NgClass} from '@angular/common';
 
 @Component({
     selector: 'app-create-job-modal',
     imports: [
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        NgClass
     ],
     templateUrl: './create-job-modal.component.html',
     styleUrl: './create-job-modal.component.css'
@@ -14,9 +16,14 @@ import {ImageRef} from '../../../services/api.service';
 export class CreateJobModalComponent implements OnInit {
     protected readonly maxN = 9999;
     protected readonly maxSubdivisions = 7;
+    protected readonly maxRepetitions = 5;
+    protected readonly maxCropCount = 5;
+
 
     activeModal = inject(NgbActiveModal);
     private fb = inject(FormBuilder);
+
+    isExpanded = signal(false);
 
 
     @Input() projectId: string | null = null;
@@ -29,7 +36,9 @@ export class CreateJobModalComponent implements OnInit {
         algorithm: ['LAP', [Validators.required]],
 
         // LAP-specific controls:
-        subdivisions: [3, [Validators.required, Validators.min(1), Validators.max(this.maxSubdivisions)]]
+        subdivisions: [3, [Validators.required, Validators.min(1), Validators.max(this.maxSubdivisions)]],
+        repetitions: [1, [Validators.required, Validators.min(1), Validators.max(this.maxRepetitions)]],
+        cropCount: [1, [Validators.required, Validators.min(1), Validators.max(this.maxCropCount)]],
     });
 
 
@@ -45,9 +54,16 @@ export class CreateJobModalComponent implements OnInit {
         return this.form.get('algorithm')!;
     }
 
-
     get sd() {
         return this.form.get('subdivisions')!;
+    }
+
+    get rep() {
+        return this.form.get('repetitions')!;
+    }
+
+    get cc() {
+        return this.form.get('cropCount')!;
     }
 
     ngOnInit(): void {
@@ -59,5 +75,9 @@ export class CreateJobModalComponent implements OnInit {
     submit() {
         if (this.form.invalid) return;
         this.activeModal.close(this.form.value)
+    }
+
+    toggleExpanded() {
+        this.isExpanded.update(v => !v)
     }
 }

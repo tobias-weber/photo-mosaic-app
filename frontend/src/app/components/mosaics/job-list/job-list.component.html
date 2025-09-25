@@ -25,11 +25,17 @@
                 }
                 <div class="card-body">
                     <h5 class="card-title">{{ job.startedAt | date:'short' }}</h5>
-                    <p class="card-text">Status: {{ JobStatus[job.status] }}</p>
-                    <p class="card-text">Number of Tiles: {{ job.n }}</p>
-                    <p class="card-text">Subdivisions: {{ job.subdivisions }}</p>
+                    <p class="card-text mb-1">Status: {{ JobStatus[job.status] }}</p>
+                    <p class="card-text mb-1">Number of Tiles: {{ job.n }}</p>
+                    <p class="card-text mb-1">Subdivisions: {{ job.subdivisions }}</p>
+                    @if (job.repetitions && job.repetitions > 1) {
+                        <p class="card-text mb-1">Repetitions: {{ job.repetitions }}</p>
+                    }
+                    @if (job.cropCount && job.cropCount > 1) {
+                        <p class="card-text mb-1">Crop Count: {{ job.cropCount }}</p>
+                    }
 
-                    @if (job.status === JobStatus.Finished) {
+                    @if (job.status === JobStatus.Finished || job.status === JobStatus.Failed) {
                         <p class="card-text">Finished: {{ job.finishedAt | date:'short' }}</p>
                         <button class="btn btn-danger" (click)="$event.stopPropagation(); deleteJob(job.jobId)">Delete
                         </button>

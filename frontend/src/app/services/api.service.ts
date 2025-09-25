@@ -89,12 +89,15 @@ export class ApiService {
 
 
     // Jobs
-    createJob(userName: string, projectId: string, targetId: string, n: number, algorithm: 'LAP', subdivisions: number) {
+    createJob(userName: string, projectId: string, targetId: string, n: number, algorithm: 'LAP',
+              subdivisions: number, repetitions: number, cropCount: number) {
         const body = {
             algorithm: algorithm,
             subdivisions: subdivisions,
             n: n,
-            target: targetId
+            target: targetId,
+            repetitions: repetitions,
+            cropCount: cropCount,
         }
         return this.http.post<Job>(`${this.BASE_URL}/users/${userName}/projects/${projectId}/jobs`, body)
     }
@@ -159,9 +162,11 @@ export interface Job {
     status: JobStatus;
     progress: number; // [0, 1] and only relevant if status === Processing
     n: number;
+    target: string;
     algorithm: string;
     subdivisions?: number;
-    target: string;
+    cropCount?: number;
+    repetitions?: number;
 }
 
 export enum JobStatus {

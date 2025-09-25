@@ -9,6 +9,8 @@ class EnqueueJobRequest(BaseModel):
     n: int
     algorithm: str
     subdivisions: int
+    crop_count: int
+    repetitions: int
     target: str
     tiles: list[str]
 

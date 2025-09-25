@@ -21,6 +21,8 @@ public class ImageStorageService : IImageStorageService
 
     private const int MaxFileSize = 10 * 1024 * 1024;
     private const int ThumbnailSizePx = 32;
+    private const int MaxImageCount = 10000;
+    
 
     private readonly AppDbContext _db;
     private readonly string _uploadPath;
@@ -53,6 +55,11 @@ public class ImageStorageService : IImageStorageService
         if (file.Length > MaxFileSize)
         {
             throw new InvalidOperationException($"File exceeds the {MaxFileSize / (1024 * 1024)} MB limit.");
+        }
+
+        if (await _db.Images.Where(i => i.ProjectId == projectId).CountAsync() > MaxImageCount)
+        {
+            throw new InvalidOperationException($"Cannot store more than {MaxImageCount} images in a single project.");
         }
 
         var imageId = Guid.NewGuid();

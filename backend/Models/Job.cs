@@ -18,24 +18,23 @@ public enum JobStatus
 public class Job
 {
     public Guid JobId { get; init; }
-    public Guid Token {get; init;} // required to access the /jobs endpoint (only used by processing)
+    public Guid Token { get; init; } // required to access the /jobs endpoint (only used by processing)
     public DateTime StartedAt { get; init; }
     public DateTime FinishedAt { get; set; }
     public JobStatus Status { get; set; }
-    [Range(0.0, 1.0, ErrorMessage = "The progress must be between 0 and 1.")] 
+
+    [Range(0.0, 1.0, ErrorMessage = "The progress must be between 0 and 1.")]
     public double Progress { get; set; }
+
     public int N { get; init; }
-    [MaxLength(64)]
-    public string Algorithm {get; init;} = null!;
+    [MaxLength(64)] public string Algorithm { get; init; } = null!;
     public int Subdivisions { get; init; }
-    public Mosaic? Mosaic { get; set; }
-    
+    public int CropCount { get; init; }
+    public int Repetitions { get; init; }
+
     public Guid ProjectId { get; init; }
     public Project Project { get; init; } = null!;
-    
+
     public Guid TargetImageId { get; init; }
     public ImageRef TargetImage { get; init; } = null!;
-    
-    public ICollection<ImageRef> Images { get; init; } = null!;
-
 }

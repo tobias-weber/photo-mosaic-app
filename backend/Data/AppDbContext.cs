@@ -27,10 +27,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             .Property(t => t.StartedAt)
             .HasDefaultValueSql("CURRENT_TIMESTAMP")
             .ValueGeneratedOnAdd();
-        modelBuilder.Entity<Mosaic>()
-            .Property(m => m.CreatedAt)
-            .HasDefaultValueSql("CURRENT_TIMESTAMP")
-            .ValueGeneratedOnAdd();
 
         modelBuilder.Entity<Job>()
             .HasOne(j => j.TargetImage)

@@ -10,7 +10,9 @@ public class JobDto(Job job)
     public JobStatus Status { get; set; } = job.Status;
     public double Progress { get; set; } = job.Progress;
     public int N { get; set; } = job.N;
-    public string Algorithm {get; set;} = job.Algorithm;
+    public string Algorithm { get; set; } = job.Algorithm;
     public int Subdivisions { get; set; } = job.Subdivisions;
+    public int CropCount { get; set; } = job.CropCount;
+    public int Repetitions { get; set; } = job.Repetitions;
     public Guid Target { get; set; } = job.TargetImageId;
 }

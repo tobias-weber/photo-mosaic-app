@@ -93,21 +93,23 @@ export class JobListComponent implements OnDestroy {
     }
 
     async createJob() {
-        const result = await this.modals.openComponentModal<{
+        const r = await this.modals.openComponentModal<{
             targetId: string,
             n: number,
             algorithm: 'LAP',
-            subdivisions: number
+            subdivisions: number,
+            repetitions: number,
+            cropCount: number
         }>(
             CreateJobModalComponent,
             {
                 projectId: this.projectId(),
                 targetImages: this.projectService.targetImageRefs()
             });
-        if (result) {
+        if (r) {
             this.isCreating.set(true);
             this.api.createJob(
-                this.targetUser(), this.projectId()!, result.targetId, result.n, result.algorithm, result.subdivisions)
+                this.targetUser(), this.projectId()!, r.targetId, r.n, r.algorithm, r.subdivisions, r.repetitions, r.cropCount)
                 .pipe(
                     finalize(() => this.isCreating.set(false))
                 ).subscribe({

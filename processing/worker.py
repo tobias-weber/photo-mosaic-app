@@ -7,6 +7,8 @@ import pyvips
 import numpy as np
 import json
 from datetime import datetime
+from typing import Union
+import traceback
 
 BASE_PATH = os.getenv("BASE_PATH", "/app/images")
 BACKEND_CALLBACK_URL = os.getenv("BACKEND_CALLBACK_URL", "http://host.docker.internal:5243/jobs")
@@ -16,32 +18,36 @@ LOAD_PROGRESS_FRACTION = 0.4  # how much of the progress indicator is used for (
 DOWNSCALED_IMAGE_SUFFIX = "sm"
 
 def process_job(request: EnqueueJobRequest):
-    # TODO: Catch exceptions and mark job as failed
-    print(f"[{datetime.now().isoformat(sep=' ', timespec='milliseconds')}] Begin processing job {request.job_id}...")
-    send_status_update(JobStatus.Processing, request, 0)
+    try:
+        print(f"[{datetime.now().isoformat(sep=' ', timespec='milliseconds')}] Begin processing job {request.job_id}...")
+        send_status_update(JobStatus.Processing, request, 0)
 
-    target, tiles = read_images(request)
+        target, tiles = read_images(request)
 
-    if request.algorithm == "LAP":
-        builder = init_LAP_builder(target, tiles, request.n, request.subdivisions)
-    else:
-        raise ValueError(f"Unknown algorithm: {request.algorithm}")
+        if request.algorithm == "LAP":
+            builder = init_LAP_builder(target, tiles, request.n, request.subdivisions, request.crop_count, request.repetitions)
+        else:
+            raise ValueError(f"Unknown algorithm: {request.algorithm}")
 
-    print(f"[{datetime.now().isoformat(sep=' ', timespec='milliseconds')}] Ready to build")
-    result = builder.build(lambda p: 
-                           send_status_update(JobStatus.Processing, request, LOAD_PROGRESS_FRACTION + (1-LOAD_PROGRESS_FRACTION) * p.progress))
+        print(f"[{datetime.now().isoformat(sep=' ', timespec='milliseconds')}] Ready to build")
+        result = builder.build(lambda p: 
+                            send_status_update(JobStatus.Processing, request, LOAD_PROGRESS_FRACTION + (1-LOAD_PROGRESS_FRACTION) * p.progress))
 
-    print(f"[{datetime.now().isoformat(sep=' ', timespec='milliseconds')}] Saving mosaic")
-    job_dir = os.path.join(BASE_PATH, "users", request.username, "projects", request.project_id, "mosaics", request.job_id)
-    path_list = save_result(request.tiles, result, job_dir)
-    send_status_update(JobStatus.GeneratedPreview, request)
+        print(f"[{datetime.now().isoformat(sep=' ', timespec='milliseconds')}] Saving mosaic")
+        job_dir = os.path.join(BASE_PATH, "users", request.username, "projects", request.project_id, "mosaics", request.job_id)
+        path_list = save_result(request.tiles, result, job_dir)
+        send_status_update(JobStatus.GeneratedPreview, request)
 
-    print(f"[{datetime.now().isoformat(sep=' ', timespec='milliseconds')}] Generating deepzoom")
-    dz_dir = os.path.join(job_dir, "dz")
-    save_deepzoom(path_list, result.shape[1], dz_dir)
-    send_status_update(JobStatus.Finished, request)
+        print(f"[{datetime.now().isoformat(sep=' ', timespec='milliseconds')}] Generating deepzoom")
+        dz_dir = os.path.join(job_dir, "dz")
+        save_deepzoom(path_list, result.shape[1], result.crop_count, dz_dir)
+        send_status_update(JobStatus.Finished, request)
 
-    print(f"[{datetime.now().isoformat(sep=' ', timespec='milliseconds')}] Finished processing")
+        print(f"[{datetime.now().isoformat(sep=' ', timespec='milliseconds')}] Finished processing")
+    except Exception:
+        traceback.print_exc()
+        send_status_update(JobStatus.Failed, request)
+        print(f"[{datetime.now().isoformat(sep=' ', timespec='milliseconds')}] Marked job as failed")
 
 
 def get_image(path, prefer_small=False) -> Image:
@@ -68,52 +74,57 @@ def read_images(request: EnqueueJobRequest) -> tuple[Image, list[Image]]:
     return target, tiles
 
 
-def init_LAP_builder(target, tiles, n, subdivisions):
+def init_LAP_builder(target: Image, tiles: list[Image], n: int, subdivisions: int, crop_count: int, repetitions: int) -> MosaicBuilder:
     params = {
         'resolution': 32,
         'granularity': subdivisions,
-        'repetitions': 1,
-        'crop_count': 1,
+        'crop_count': max(1, crop_count),
+        'repetitions': max(1, repetitions),
         'tile_count': max(1, min(n, len(tiles)))
     }
     return MosaicBuilder(photo=target, tile_images=tiles, params=params)
 
 
-def get_assignment_descriptor(path_list, shape):
+def get_assignment_descriptor(path_list: Union[list[str], list[list[str]]], shape: tuple[int, int], crop_count: int):
     nrows, ncols = shape
     reshaped_paths = [path_list[i*ncols : (i+1)*ncols] for i in range(nrows)]
     return {
         "assignment": reshaped_paths,
         "shape": shape,
-        "n": nrows * ncols
+        "n": nrows * ncols,
+        "crop_count": crop_count
     }
 
 
-def save_result(tiles, result, job_dir):
+def save_result(tiles: list[str], result: Mosaic, job_dir: str):
     os.makedirs(job_dir, exist_ok=True)
     mosaic_path = os.path.join(job_dir, "mosaic.jpg")
     result.mosaic.save(mosaic_path, format="JPEG")
 
     path_list = assignment_to_path_list(result.assignment, tiles)
     with open(os.path.join(job_dir, "assignment.json"), 'w') as f:
-        descriptor = get_assignment_descriptor(path_list, result.shape)
-        json.dump(descriptor, f, indent=2)
+        descriptor = get_assignment_descriptor(path_list, result.shape, result.crop_count)
+        json.dump(descriptor, f)
     return path_list
     
 
-def assignment_to_path_list(assignment: np.ndarray, paths: list[str]) -> list[str]:
-    return [paths[i] for i in assignment]
+def assignment_to_path_list(assignment: np.ndarray, paths: list[str]) -> Union[list[str], list[list[str]]]:
+    if assignment.ndim == 1 or assignment.shape[1] == 1:
+        return [paths[i] for i in assignment]  # crop_count = 1
+    return [(paths[row[0]], int(row[1])) for row in assignment]  # each assignment becomes a pair (path, crop_idx)
 
 
-def save_deepzoom(path_list, ncols, dz_dir):
+def save_deepzoom(path_list: Union[list[str], list[list[str]]], ncols: int, crop_count: int, dz_dir: str):
     os.makedirs(dz_dir, exist_ok=True)
-    tiles = [load_vips_tile(path) for path in path_list]
+    tiles = [load_vips_tile(path, crop_count) for path in path_list]
     mosaic = pyvips.Image.arrayjoin(tiles, across=ncols)
     mosaic.dzsave(os.path.join(dz_dir, "dz.jpg"), tile_size=512)
 
 
-def load_vips_tile(path: str) -> pyvips.Image:
-    image = pyvips.Image.new_from_file(os.path.join(BASE_PATH, path), access="sequential")
+def load_vips_tile(path: Union[str, list[str]], crop_count: int) -> pyvips.Image:
+    image_path = path if crop_count == 1 else path[0]
+
+    image = pyvips.Image.new_from_file(os.path.join(BASE_PATH, image_path), access="sequential")
     if image.bands == 4:
         # If RGBA, discard the alpha channel to get RGB
         image = image.extract_band(0, n=3)
@@ -124,9 +135,19 @@ def load_vips_tile(path: str) -> pyvips.Image:
     # Determine the size of the smaller side for a square crop
     crop_size = min(width, height)
 
-    # Calculate the top-left coordinates for the centered crop
+    # Centered crop
     left = (width - crop_size) // 2
     top = (height - crop_size) // 2
+
+    if crop_count > 1:
+        # possibly different alignment
+        delta_rel = path[1] / (crop_count - 1) - 0.5
+        delta_abs = (max(width, height) - crop_size) * delta_rel
+        ## square images are translated diagonally
+        if width >= height:
+            left += delta_abs
+        if width <= height:
+            top += delta_abs
 
     # Crop the image to a centered square
     cropped_image = image.extract_area(left, top, crop_size, crop_size)

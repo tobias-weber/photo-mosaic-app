@@ -12,6 +12,8 @@ public class ProcessingService : IProcessingService
     private readonly IImageStorageService _storage;
 
     private const int MaxN = 4000;
+    private const int MaxCropCount = 5;
+    private const int MaxRepetitions = 5;
 
     public ProcessingService(HttpClient httpClient, AppDbContext db, IImageStorageService storage)
     {
@@ -24,6 +26,17 @@ public class ProcessingService : IProcessingService
     {
         await CheckIfProjectValid(userName, projectId);
 
+        if (request.N < 0)
+            throw new InvalidOperationException("N cannot be less than 0.");
+        if (request.CropCount < 1)
+            throw new InvalidOperationException("The crop count must be positive.");
+        if (request.CropCount > MaxCropCount)
+            throw new InvalidOperationException($"The crop count is limited to at most {MaxCropCount}.");
+        if (request.Repetitions < 1)
+            throw new InvalidOperationException("The number of repetitions must be positive.");
+        if (request.Repetitions > MaxRepetitions)
+            throw new InvalidOperationException($"The number of repetitions is limited to at most {MaxRepetitions}.");
+
         var job = new Job()
         {
             JobId = Guid.NewGuid(),
@@ -34,14 +47,15 @@ public class ProcessingService : IProcessingService
             N = request.N == 0
                 ? await _db.Images.Where(i => i.ProjectId == projectId && !i.IsTarget).CountAsync()
                 : request.N,
+            CropCount = request.CropCount,
+            Repetitions = request.Repetitions,
             Algorithm = request.Algorithm,
             Subdivisions = request.Subdivisions,
             TargetImageId = request.Target
         };
         if (job.N > MaxN)
-        {
             throw new InvalidOperationException($"N is currently limited to at most {MaxN} tiles.");
-        }
+
 
         var targetPath = await _db.Images.Where(i => i.ImageId == job.TargetImageId && i.IsTarget)
             .Select(i => i.FilePath).FirstOrDefaultAsync();
@@ -62,6 +76,8 @@ public class ProcessingService : IProcessingService
             n = job.N,
             algorithm = job.Algorithm,
             subdivisions = job.Subdivisions,
+            crop_count = job.CropCount,
+            repetitions = job.Repetitions,
             target = targetPath,
             tiles = tilePaths
         };
@@ -171,9 +187,9 @@ public class ProcessingService : IProcessingService
         await CheckIfProjectValid(userName, projectId);
         var job = await _db.Jobs.FirstOrDefaultAsync(j => j.JobId == jobId && j.ProjectId == projectId);
         if (job is null) throw new InvalidOperationException($"Job {jobId} does not exist.");
-        if (job.Status is not (JobStatus.Finished or JobStatus.Aborted or JobStatus.Failed)) 
+        if (job.Status is not (JobStatus.Finished or JobStatus.Aborted or JobStatus.Failed))
             throw new InvalidOperationException($"Job {jobId} is still active.");
-        
+
         _storage.DeleteMosaic(userName, job.ProjectId, jobId);
         _db.Jobs.Remove(job);
         await _db.SaveChangesAsync();

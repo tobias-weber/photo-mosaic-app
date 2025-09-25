@@ -44,10 +44,11 @@ class MosaicProgress(Enum):
     FINISHED = (4, 0.99)
 
 class Mosaic:
-    def __init__(self, photo: Image, mosaic: Image, shape: tuple[int, int], assignment: np.ndarray):
+    def __init__(self, photo: Image, mosaic: Image, shape: tuple[int, int], crop_count: int, assignment: np.ndarray):
         self.photo = photo
         self.mosaic: Image = mosaic
         self.shape = shape
+        self.crop_count = crop_count
         self.assignment = assignment
 
     def get_score(self):
@@ -127,7 +128,7 @@ class MosaicBuilder:
             self.shape = (int(h // self.tile_res), int(w // self.tile_res))
 
         mosaic, assignment = self._build_mosaic(progress_callback)
-        return Mosaic(self.photo, mosaic, self.shape, assignment)
+        return Mosaic(self.photo, mosaic, self.shape, self.crop_count, assignment)
 
     def _build_mosaic(self, progress_callback=None):
         progress_callback(MosaicProgress.STARTED) if progress_callback else None
@@ -136,11 +137,11 @@ class MosaicBuilder:
         progress_callback(MosaicProgress.PREPARED_TILES) if progress_callback else None
         C, C_choice = self._get_best_C(tile_vals)
         progress_callback(MosaicProgress.COMPUTED_COSTS) if progress_callback else None
-        col_ind = self._get_assignment(C, C_choice)
+        col_ind, choices = self._get_assignment(C, C_choice)
         progress_callback(MosaicProgress.FOUND_ASSIGNMENT) if progress_callback else None
         mosaic = self._get_mosaic(tiles, col_ind)
         progress_callback(MosaicProgress.FINISHED) if progress_callback else None
-        return mosaic, col_ind
+        return mosaic, self._get_input_tiles_assignment(col_ind, choices)
 
     def _get_tiles(self):
         size = (self.tile_res, self.tile_res)
@@ -219,10 +220,17 @@ class MosaicBuilder:
 
         row_ind, col_ind = optimize.linear_sum_assignment(C)
         col_ind %= n_images
-        if C_choice is not None:
-            col_ind = col_ind * self.crop_count + C_choice[row_ind, col_ind]
-
-        return col_ind
+        if C_choice is None:
+            return col_ind, None
+        
+        choices = C_choice[row_ind, col_ind]
+        col_ind = col_ind * self.crop_count + choices
+        return col_ind, choices
+    
+    def _get_input_tiles_assignment(self, col_ind, choices):
+        if choices is None:
+            return col_ind
+        return np.column_stack((col_ind // self.crop_count, choices))
 
     def _get_mosaic(self, tiles, col_ind):
         canvas = Image.new('RGB', (self.tile_res * self.shape[1], self.tile_res * self.shape[0]))

@@ -2,8 +2,10 @@
 
 public class EnqueueJobDto
 {
-    public required string Algorithm {get; set;}
+    public required string Algorithm { get; set; }
     public int Subdivisions { get; set; }
-    public int N {get; set; }
+    public int CropCount { get; set; }
+    public int Repetitions { get; set; }
+    public int N { get; set; }
     public Guid Target { get; set; }
 }
