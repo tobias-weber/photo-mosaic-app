@@ -1,12 +1,15 @@
-import {Component, ElementRef, inject, input, NgZone, OnDestroy, OnInit} from '@angular/core';
+import {Component, effect, ElementRef, inject, input, NgZone, OnDestroy, OnInit, signal} from '@angular/core';
 import OpenSeadragon, {ControlAnchor, Viewer} from 'openseadragon';
 import {ProjectService} from '../../../services/project.service';
 import {tokenKey} from '../../../services/auth.service';
 import {ApiService} from '../../../services/api.service';
+import {FormsModule} from '@angular/forms';
 
 @Component({
     selector: 'app-mosaic-viewer',
-    imports: [],
+    imports: [
+        FormsModule
+    ],
     templateUrl: './mosaic-viewer.component.html',
     styleUrl: './mosaic-viewer.component.css'
 })
@@ -19,6 +22,23 @@ export class MosaicViewerComponent implements OnInit, OnDestroy {
 
     // input from parent (e.g. jobId)
     jobId = input.required<string>();
+    overlayUrl = input<string>();
+    hasOverlay = false;
+    opacity = signal(0);
+
+    constructor() {
+        effect(() => {
+            if (this.overlayUrl() && this.viewer && this.opacity() > 0 && !this.hasOverlay) {
+                // by waiting for the opacity to change from user input we ensure the image has time to load
+                const bounds = this.viewer.world.getHomeBounds();
+                this.viewer.addOverlay(
+                    'image-overlay',
+                    new OpenSeadragon.Rect(0, 0, bounds.width, bounds.height)
+                );
+                this.hasOverlay = true;
+            }
+        });
+    }
 
     ngOnInit() {
         const url = this.api.constructDzUrl(this.project.targetUser(), this.project.projectId()!, this.jobId());

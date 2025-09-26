@@ -28,6 +28,7 @@ public class Job
 
     public int N { get; init; }
     [MaxLength(64)] public string Algorithm { get; init; } = null!;
+    [MaxLength(64)] public string ColorSpace { get; init; } = null!;
     public int Subdivisions { get; init; }
     public int CropCount { get; init; }
     public int Repetitions { get; init; }

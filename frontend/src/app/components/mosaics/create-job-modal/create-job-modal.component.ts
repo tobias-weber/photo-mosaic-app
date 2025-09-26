@@ -36,7 +36,8 @@ export class CreateJobModalComponent implements OnInit {
         algorithm: ['LAP', [Validators.required]],
 
         // LAP-specific controls:
-        subdivisions: [3, [Validators.required, Validators.min(1), Validators.max(this.maxSubdivisions)]],
+        colorSpace: ['CIELAB', [Validators.required]],
+        subdivisions: [5, [Validators.required, Validators.min(1), Validators.max(this.maxSubdivisions)]],
         repetitions: [1, [Validators.required, Validators.min(1), Validators.max(this.maxRepetitions)]],
         cropCount: [1, [Validators.required, Validators.min(1), Validators.max(this.maxCropCount)]],
     });
@@ -52,6 +53,10 @@ export class CreateJobModalComponent implements OnInit {
 
     get alg() {
         return this.form.get('algorithm')!;
+    }
+
+    get cs() {
+        return this.form.get('colorSpace')!;
     }
 
     get sd() {

@@ -1,1 +1,15 @@
-<div class="w-100 bg-dark border-0" #osdContainer></div>
+<div class="w-100 bg-dark border-0 osd-container" #osdContainer>
+    <div id="image-overlay">
+        @if (overlayUrl() && hasOverlay) {
+            <img [src]="overlayUrl()" class="w-100 h-100" alt="Target" [style]="{'opacity': opacity() / 100}">
+        }
+    </div>
+</div>
+
+<div class="mt-3">
+    <input type="range" class="form-range" id="range1" [ngModel]="opacity()" (ngModelChange)="opacity.set($event)">
+    <label for="range1" class="form-label">
+        <strong>Overlay Opacity: {{ opacity() }} %</strong>
+    </label>
+</div>
+

@@ -50,12 +50,7 @@
 
     @if (j.status === JobStatus.Finished) {
         <div class="mb-5">
-            <app-mosaic-viewer [jobId]="j.jobId"></app-mosaic-viewer>
-        </div>
-
-        <h3 class="text-center">Target Image</h3>
-        <div class="d-flex justify-content-center preview-container mb-3">
-            <img [src]="targetImage()?.url" class="full-width-img" alt="Target">
+            <app-mosaic-viewer [jobId]="j.jobId" [overlayUrl]="targetImage()?.url"></app-mosaic-viewer>
         </div>
     } @else if (j.status === JobStatus.Failed) {
         <div class="alert alert-danger" role="alert">
@@ -69,6 +64,7 @@
                 <div class="card-body">
                     <h5 class="card-title">{{ JobStatus[j.status] }}</h5>
                     <p class="card-text">Number of Tiles: {{ j.n }}</p>
+                    <p class="card-text">Color Space: {{ j.colorSpace }}</p>
                     <p class="card-text">Subdivisions: {{ j.subdivisions }}</p>
                     <p class="card-text">Repetitions: {{ j.repetitions }}</p>
                     <p class="card-text">Crop Count: {{ j.cropCount }}</p>

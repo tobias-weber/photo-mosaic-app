@@ -28,6 +28,8 @@ import numpy as np
 from scipy import optimize
 import math
 from enum import Enum
+from skimage import color
+from typing import Callable
 
 class MosaicProgress(Enum):
     """
@@ -79,6 +81,7 @@ class MosaicBuilder:
             self.set_repetitions(params['repetitions'])
             self.set_crop_count(params['crop_count'])
             self.set_tile_count(params['tile_count'])
+            self.set_color_space(params['color_space'])
         else:
             self.shape = (1, 1)  # (vertical no. of tiles, horizontal no. of tiles)
             self.tile_res: int = 64
@@ -86,6 +89,7 @@ class MosaicBuilder:
             self.repetitions = 1
             self.crop_count = 1
             self.tile_count = 0
+            self.color_space = 'RGB'
 
     def set_tile_images(self, images):
         self.tile_images = images
@@ -115,6 +119,10 @@ class MosaicBuilder:
 
     def set_crop_count(self, crop_count: int):
         self.crop_count = crop_count
+        return self
+    
+    def set_color_space(self, color_space: str):
+        self.color_space = color_space
         return self
 
     def build(self, progress_callback=None) -> Mosaic:
@@ -155,11 +163,21 @@ class MosaicBuilder:
             return [ImageOps.fit(img, size, Image.LANCZOS, centering=(0.5, 0.5)) for img in self.tile_images]
 
     def _get_tile_vals(self, tiles) -> np.ndarray:
+        converter = self._get_color_space_converter()
         size = (self.granularity, self.granularity)
         tile_vals = np.zeros((len(tiles), self.granularity, self.granularity, 3))
         for i, img in enumerate(tiles):
-            tile_vals[i] = np.asarray(img.resize(size, resample=Image.Resampling.BILINEAR))
+            tile_vals[i] = converter(np.asarray(img.resize(size, resample=Image.Resampling.BILINEAR)))
         return tile_vals
+    
+    def _get_color_space_converter(self) -> Callable[[np.ndarray], np.ndarray]:
+        match self.color_space.upper():
+            case 'CIELAB':
+                return lambda arr: color.rgb2lab(arr / 255.0)
+            case 'CIELAB_WEIGHTED': # emphasize lightness
+                return lambda arr: weighted_lab_converter(arr, 5)
+            case _: # basic RGB
+                return lambda arr: arr
     
     def _get_C(self, tile_vals):
         g = self.granularity
@@ -171,6 +189,7 @@ class MosaicBuilder:
             photo_arr = np.asarray(self.photo.resize(
                 (self.shape[1] * g, self.shape[0] * g),
                 resample=Image.Resampling.BILINEAR))
+        photo_arr = self._get_color_space_converter()(photo_arr)
 
         n = self.shape[0] * self.shape[1]
         rows, cols = self.shape
@@ -288,3 +307,9 @@ def shape_from_count(img: Image, n: int):
 def blend_images(img1, img2, opacity):
     resized2 = img2.resize(img1.size, Image.Resampling.LANCZOS)
     return Image.blend(img1, resized2, opacity)
+
+
+def weighted_lab_converter(rgb_arr: np.ndarray, l_weight) -> np.ndarray:
+        lab_arr = color.rgb2lab(rgb_arr / 255.0)
+        lab_arr[:, :, 0] *= l_weight
+        return lab_arr

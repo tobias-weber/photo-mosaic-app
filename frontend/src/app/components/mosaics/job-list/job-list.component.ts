@@ -97,6 +97,7 @@ export class JobListComponent implements OnDestroy {
             targetId: string,
             n: number,
             algorithm: 'LAP',
+            colorSpace: 'RGB' | 'CIELAB' | 'CIELAB_WEIGHTED',
             subdivisions: number,
             repetitions: number,
             cropCount: number
@@ -109,7 +110,8 @@ export class JobListComponent implements OnDestroy {
         if (r) {
             this.isCreating.set(true);
             this.api.createJob(
-                this.targetUser(), this.projectId()!, r.targetId, r.n, r.algorithm, r.subdivisions, r.repetitions, r.cropCount)
+                this.targetUser(), this.projectId()!,
+                r.targetId, r.n, r.algorithm, r.subdivisions, r.repetitions, r.cropCount, r.colorSpace)
                 .pipe(
                     finalize(() => this.isCreating.set(false))
                 ).subscribe({

@@ -3,6 +3,7 @@
 public class EnqueueJobDto
 {
     public required string Algorithm { get; set; }
+    public string ColorSpace { get; set; } = null!;
     public int Subdivisions { get; set; }
     public int CropCount { get; set; }
     public int Repetitions { get; set; }

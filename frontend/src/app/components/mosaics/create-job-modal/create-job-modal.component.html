@@ -51,24 +51,6 @@
             <div class="form-text">Enter 0 to automatically use the maximum number of tiles.</div>
         </div>
 
-        <!-- Algorithm -->
-        <div class="mb-3">
-            <label for="algorithm" class="form-label">Algorithm</label>
-            <select
-                id="algorithm"
-                class="form-select"
-                formControlName="algorithm"
-                [class.is-invalid]="alg.invalid && (alg.dirty || alg.touched)"
-            >
-                <option value="LAP">LAP</option>
-            </select>
-            @if (alg.invalid && (alg.dirty || alg.touched)) {
-                <div class="invalid-feedback">
-                    Algorithm is required.
-                </div>
-            }
-        </div>
-
         <!-- Subdivisions -->
         <div class="mb-3">
             <label for="subdivisions" class="form-label">Subdivisions</label>
@@ -122,6 +104,44 @@
         <div class="collapse" [ngClass]="{'show': isExpanded()}">
             <div class="card bg-light">
                 <div class="card-body">
+                    <!-- Algorithm -->
+                    <div class="mb-3">
+                        <label for="algorithm" class="form-label">Algorithm</label>
+                        <select
+                            id="algorithm"
+                            class="form-select"
+                            formControlName="algorithm"
+                            [class.is-invalid]="alg.invalid && (alg.dirty || alg.touched)"
+                        >
+                            <option value="LAP">LAP</option>
+                        </select>
+                        @if (alg.invalid && (alg.dirty || alg.touched)) {
+                            <div class="invalid-feedback">
+                                Algorithm is required.
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Color Space -->
+                    <div class="mb-3">
+                        <label for="colorSpace" class="form-label">Color Space</label>
+                        <select
+                            id="colorSpace"
+                            class="form-select"
+                            formControlName="colorSpace"
+                            [class.is-invalid]="cs.invalid && (cs.dirty || cs.touched)"
+                        >
+                            <option value="RGB">RGB</option>
+                            <option value="CIELAB">CIELAB</option>
+                            <option value="CIELAB_WEIGHTED">CIELAB (emphasis on lightness)</option>
+                        </select>
+                        @if (cs.invalid && (cs.dirty || cs.touched)) {
+                            <div class="invalid-feedback">
+                                Color space is required.
+                            </div>
+                        }
+                    </div>
+
                     <!-- Repetitions -->
                     <div class="mb-3">
                         <label for="repetitions" class="form-label">Repetitions</label>

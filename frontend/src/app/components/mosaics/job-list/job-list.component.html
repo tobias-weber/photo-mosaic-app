@@ -27,6 +27,7 @@
                     <h5 class="card-title">{{ job.startedAt | date:'short' }}</h5>
                     <p class="card-text mb-1">Status: {{ JobStatus[job.status] }}</p>
                     <p class="card-text mb-1">Number of Tiles: {{ job.n }}</p>
+                    <p class="card-text">Color Space: {{ job.colorSpace }}</p>
                     <p class="card-text mb-1">Subdivisions: {{ job.subdivisions }}</p>
                     @if (job.repetitions && job.repetitions > 1) {
                         <p class="card-text mb-1">Repetitions: {{ job.repetitions }}</p>

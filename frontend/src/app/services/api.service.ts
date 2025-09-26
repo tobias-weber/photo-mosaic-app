@@ -90,7 +90,7 @@ export class ApiService {
 
     // Jobs
     createJob(userName: string, projectId: string, targetId: string, n: number, algorithm: 'LAP',
-              subdivisions: number, repetitions: number, cropCount: number) {
+              subdivisions: number, repetitions: number, cropCount: number, colorSpace: 'RGB' | 'CIELAB' | 'CIELAB_WEIGHTED') {
         const body = {
             algorithm: algorithm,
             subdivisions: subdivisions,
@@ -98,6 +98,7 @@ export class ApiService {
             target: targetId,
             repetitions: repetitions,
             cropCount: cropCount,
+            colorSpace: colorSpace
         }
         return this.http.post<Job>(`${this.BASE_URL}/users/${userName}/projects/${projectId}/jobs`, body);
     }
@@ -192,6 +193,7 @@ export interface Job {
     n: number;
     target: string;
     algorithm: string;
+    colorSpace: string;
     subdivisions?: number;
     cropCount?: number;
     repetitions?: number;

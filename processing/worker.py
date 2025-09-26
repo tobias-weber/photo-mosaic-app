@@ -25,7 +25,7 @@ def process_job(request: EnqueueJobRequest):
         target, tiles, tile_paths = read_images(request)
 
         if request.algorithm == "LAP":
-            builder = init_LAP_builder(target, tiles, request.n, request.subdivisions, request.crop_count, request.repetitions)
+            builder = init_LAP_builder(target, tiles, request.n, request.subdivisions, request.crop_count, request.repetitions, request.color_space)
         else:
             raise ValueError(f"Unknown algorithm: {request.algorithm}")
 
@@ -85,13 +85,14 @@ def get_collection_tile_paths(collections):
     return paths
 
 
-def init_LAP_builder(target: Image, tiles: list[Image], n: int, subdivisions: int, crop_count: int, repetitions: int) -> MosaicBuilder:
+def init_LAP_builder(target: Image, tiles: list[Image], n: int, subdivisions: int, crop_count: int, repetitions: int, color_space: str) -> MosaicBuilder:
     params = {
         'resolution': 32,
         'granularity': subdivisions,
         'crop_count': max(1, crop_count),
         'repetitions': max(1, repetitions),
-        'tile_count': max(1, min(n, len(tiles)))
+        'tile_count': max(1, min(n, len(tiles))),
+        'color_space': color_space
     }
     return MosaicBuilder(photo=target, tile_images=tiles, params=params)
 

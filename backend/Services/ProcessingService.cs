@@ -68,7 +68,8 @@ public class ProcessingService : IProcessingService
             Repetitions = request.Repetitions,
             Algorithm = request.Algorithm,
             Subdivisions = request.Subdivisions,
-            TargetImageId = request.Target
+            TargetImageId = request.Target,
+            ColorSpace = request.ColorSpace
         };
         if (job.N > MaxN)
             throw new InvalidOperationException($"N is currently limited to at most {MaxN} tiles.");
@@ -91,6 +92,7 @@ public class ProcessingService : IProcessingService
             token = job.Token,
             n = job.N,
             algorithm = job.Algorithm,
+            color_space = job.ColorSpace,
             subdivisions = job.Subdivisions,
             crop_count = job.CropCount,
             repetitions = job.Repetitions,

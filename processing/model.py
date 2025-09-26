@@ -15,6 +15,7 @@ class EnqueueJobRequest(BaseModel):
     tiles: list[str]
     collections: list[str]
     tileCount: int
+    color_space: str
 
 
 class JobStatus(Enum):

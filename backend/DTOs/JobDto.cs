@@ -11,6 +11,7 @@ public class JobDto(Job job)
     public double Progress { get; set; } = job.Progress;
     public int N { get; set; } = job.N;
     public string Algorithm { get; set; } = job.Algorithm;
+    public string ColorSpace { get; set; } = job.ColorSpace;
     public int Subdivisions { get; set; } = job.Subdivisions;
     public int CropCount { get; set; } = job.CropCount;
     public int Repetitions { get; set; } = job.Repetitions;
