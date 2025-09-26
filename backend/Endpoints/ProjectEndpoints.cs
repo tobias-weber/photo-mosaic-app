@@ -61,6 +61,11 @@ public static class ProjectEndpoints
                 }
             });
 
+        // GET the selected collections
+        group.MapGet("/{projectId:guid}/collections/",
+            async (string userName, Guid projectId, ITileCollectionService collections) =>
+                Results.Ok(await collections.GetSelectedCollectionIds(userName, projectId)));
+
         // POST a new project for a user
         group.MapPost("/", async (AppDbContext db, string userName, CreateProjectDto request) =>
         {
@@ -100,6 +105,14 @@ public static class ProjectEndpoints
                 {
                     return Results.BadRequest(ex.Message);
                 }
+            });
+        
+        // POST (select) a collection
+        group.MapPost("/{projectId:guid}/collections/{collectionId}",
+            async (string userName, Guid projectId, string collectionId, ITileCollectionService collections) =>
+            {
+                await collections.SelectCollectionAsync(userName, projectId, collectionId);
+                return Results.Ok(await collections.GetSelectedCollectionIds(userName, projectId));
             });
 
         // PUT to update a project
@@ -155,6 +168,14 @@ public static class ProjectEndpoints
                 {
                     return Results.BadRequest(ex.Message);
                 }
+            });
+        
+        // DELETE a selected collection
+        group.MapDelete("/{projectId:guid}/collections/{collectionId}",
+            async (string userName, Guid projectId, string collectionId, ITileCollectionService collections) =>
+            {
+                await collections.DeselectCollectionAsync(userName, projectId, collectionId);
+                return Results.Ok(await collections.GetSelectedCollectionIds(userName, projectId));
             });
     }
 

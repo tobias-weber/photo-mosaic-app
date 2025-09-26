@@ -1,5 +1,7 @@
 using System.Security.Claims;
 using System.Text;
+using backend.Collections;
+using backend.Collections.Installers;
 using backend.Data;
 using backend.Endpoints;
 using backend.Helpers;
@@ -62,6 +64,8 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"))
     .AddPolicy("UserPolicy", policy => policy.RequireRole("User"))
     .AddPolicy("GuestPolicy", policy => policy.RequireRole("Guest"))
+    .AddPolicy("AnyRolePolicy", policy => 
+        policy.RequireRole("Admin", "User", "Guest"))
     .AddPolicy("OwnerOrAdmin", policy => policy.RequireAssertion(context =>
         {
             if (context.User.IsInRole("Admin"))
@@ -100,7 +104,10 @@ builder.Services.AddCors(options =>
 
 // Custom services
 builder.Services.AddScoped<IImageStorageService, ImageStorageService>();
-
+builder.Services.AddHttpClient<ZipCollectionInstaller>();
+builder.Services.Configure<List<TileCollectionConfig>>(
+    builder.Configuration.GetSection("TileCollections"));
+builder.Services.AddScoped<ITileCollectionService, TileCollectionService>();
 // Register HttpClient for Python API
 builder.Services.AddHttpClient<IProcessingService, ProcessingService>(client =>
 {
@@ -126,8 +133,9 @@ using (var scope = app.Services.CreateScope())
     DatabaseHelper.EnsureDatabaseAndDirectoryCreated(scope.ServiceProvider.GetRequiredService<AppDbContext>());
 }
 
-// Seed the database with roles and a default admin user
+// Seed the database
 await DbInitializer.SeedRolesAndUsersAsync(app);
+await DbInitializer.InitTileCollections(app);
 
 // Add the authentication middleware
 app.UseAuthentication();
@@ -139,5 +147,6 @@ app.MapAuthEndpoints();
 app.MapUserEndpoints();
 app.MapProjectEndpoints();
 app.MapJobEndpoints();
+app.MapCollectionEndpoints();
 
 app.Run();

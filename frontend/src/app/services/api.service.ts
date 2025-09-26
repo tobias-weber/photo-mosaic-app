@@ -28,7 +28,7 @@ export class ApiService {
     }
 
     login(userName: string, password: string) {
-        return this.http.post<AuthResponse>(`${this.BASE_URL}/login`, {userName, password})
+        return this.http.post<AuthResponse>(`${this.BASE_URL}/login`, {userName, password});
     }
 
     getUser(userName: string) {
@@ -48,11 +48,11 @@ export class ApiService {
     }
 
     createProject(userName: string, title: string) {
-        return this.http.post<Project>(`${this.BASE_URL}/users/${userName}/projects/`, {title})
+        return this.http.post<Project>(`${this.BASE_URL}/users/${userName}/projects/`, {title});
     }
 
     updateProject(userName: string, project: Project) {
-        return this.http.put<Project>(`${this.BASE_URL}/users/${userName}/projects/${project.projectId}`, project)
+        return this.http.put<Project>(`${this.BASE_URL}/users/${userName}/projects/${project.projectId}`, project);
     }
 
     deleteProject(userName: string, projectId: string) {
@@ -63,7 +63,7 @@ export class ApiService {
         const formData = new FormData();
         formData.append('file', file, file.name);
         formData.append('isTarget', String(isTarget));
-        return this.http.post<string>(`${this.BASE_URL}/users/${userName}/projects/${projectId}/images`, formData)
+        return this.http.post<string>(`${this.BASE_URL}/users/${userName}/projects/${projectId}/images`, formData);
     }
 
     getImageRefs(userName: string, projectId: string, filter: 'TILES' | 'TARGETS' | 'ALL') {
@@ -99,7 +99,7 @@ export class ApiService {
             repetitions: repetitions,
             cropCount: cropCount,
         }
-        return this.http.post<Job>(`${this.BASE_URL}/users/${userName}/projects/${projectId}/jobs`, body)
+        return this.http.post<Job>(`${this.BASE_URL}/users/${userName}/projects/${projectId}/jobs`, body);
     }
 
     getJobs(userName: string, projectId: string) {
@@ -124,6 +124,34 @@ export class ApiService {
 
     constructDzUrl(userName: string, projectId: string, jobId: string) {
         return `${this.BASE_URL}/users/${userName}/projects/${projectId}/jobs/${jobId}/dz/dz.jpg.dzi`;
+    }
+
+    // Collections
+    getCollections() {
+        return this.http.get<TileCollection[]>(`${this.BASE_URL}/collections`);
+    }
+
+    installCollection(collectionId: string) {
+        return this.http.post<void>(`${this.BASE_URL}/collections/${collectionId}/install`, null);
+    }
+
+    uninstallCollection(collectionId: string) {
+        return this.http.post<void>(`${this.BASE_URL}/collections/${collectionId}/uninstall`, null);
+    }
+
+    getSelectedCollections(userName: string, projectId: string) {
+        return this.http.get<string[]>(
+            `${this.BASE_URL}/users/${userName}/projects/${projectId}/collections/`);
+    }
+
+    selectCollection(userName: string, projectId: string, collectionId: string) {
+        return this.http.post<string[]>(
+            `${this.BASE_URL}/users/${userName}/projects/${projectId}/collections/${collectionId}`, null);
+    }
+
+    deselectCollection(userName: string, projectId: string, collectionId: string) {
+        return this.http.delete<string[]>(
+            `${this.BASE_URL}/users/${userName}/projects/${projectId}/collections/${collectionId}`);
     }
 
     // Admin Endpoints
@@ -169,6 +197,16 @@ export interface Job {
     repetitions?: number;
 }
 
+export interface TileCollection {
+    id: string;
+    name: string;
+    imageCount: number;
+    size: string;
+    description: string;
+    status: CollectionStatus;
+    installDate: Date;
+}
+
 export enum JobStatus {
     'Created' = 0,
     'Submitted' = 1,
@@ -177,4 +215,10 @@ export enum JobStatus {
     'Finished' = 4,
     'Aborted' = 5,
     'Failed' = 6,
+}
+
+export enum CollectionStatus {
+    'NotInstalled' = 0,
+    'Downloading' = 1,
+    'Ready' = 2
 }

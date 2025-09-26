@@ -13,6 +13,8 @@ class EnqueueJobRequest(BaseModel):
     repetitions: int
     target: str
     tiles: list[str]
+    collections: list[str]
+    tileCount: int
 
 
 class JobStatus(Enum):

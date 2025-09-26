@@ -23,6 +23,8 @@ public interface IImageStorageService
     bool DeepZoomExists(string userName, Guid projectId, Guid jobId);
 
     string GetMosaicPath(string userName, Guid projectId, Guid jobId);
+    
+    string CreateAndGetCollectionPath(string id);
 
     (string absPath, string contentType) GetDeepZoomPath(string userName, Guid projectId, Guid jobId, string filePath);
 }

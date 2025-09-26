@@ -11,9 +11,6 @@
         <div class="collapse navbar-collapse" id="navbarContent">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link" routerLinkActive="active" routerLink="/dashboard">Dashboard</a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link" routerLinkActive="active" routerLink="/projects">Projects</a>
                 </li>
                 @if (isAdmin()) {
@@ -21,6 +18,9 @@
                         <a class="nav-link" routerLinkActive="active" routerLink="/users">Users</a>
                     </li>
                 }
+                <li class="nav-item">
+                    <a class="nav-link" routerLinkActive="active" routerLink="/collections">Collections</a>
+                </li>
             </ul>
 
             <span class="navbar-text ms-auto me-3">

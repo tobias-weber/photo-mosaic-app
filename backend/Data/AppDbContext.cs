@@ -11,6 +11,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Project> Projects { get; set; }
     public DbSet<Job> Jobs { get; set; }
     public DbSet<ImageRef> Images { get; set; }
+    public DbSet<TileCollection> TileCollections { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

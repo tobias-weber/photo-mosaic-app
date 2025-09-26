@@ -1,0 +1,23 @@
+@for (c of collections(); track c.id) {
+    <div class="form-check">
+        <input class="form-check-input" id="check-{{c.id}}" type="checkbox"
+               [checked]="selectedCollectionIds().includes(c.id)" (click)="toggleSelection(c.id)">
+        <label class="form-check-label" for="check-{{c.id}}">
+            <span class="me-3"
+                  [ngClass]="{'text-danger': c.status !== CollectionStatus.Ready && selectedCollectionIds().includes(c.id), 'fw-bold': selectedCollectionIds().includes(c.id)}">
+                {{ c.name }}
+            </span>
+            @switch (c.status) {
+                @case (CollectionStatus.NotInstalled) {
+                    <span class="badge text-bg-danger">Not Installed</span>
+                }
+                @case (CollectionStatus.Downloading) {
+                    <span class="badge text-bg-warning">Installing</span>
+                }
+                @case (CollectionStatus.Ready) {
+                    <span class="badge text-bg-success">Installed</span>
+                }
+            }
+        </label>
+    </div>
+}

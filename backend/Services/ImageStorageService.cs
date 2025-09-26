@@ -88,7 +88,7 @@ public class ImageStorageService : IImageStorageService
 
         if (!isTarget)
         {
-            await SaveDownscaledRgbImageAsync(file, absPath);
+            await SaveDownscaledRgbImageAsync(file.OpenReadStream(), absPath);
         }
 
         _db.Images.Add(imageRef);
@@ -223,6 +223,13 @@ public class ImageStorageService : IImageStorageService
         return Path.Combine(GetMosaicDirPath(userName, projectId, jobId), "mosaic.jpg");
     }
 
+    public string CreateAndGetCollectionPath(string id)
+    {
+        var path = Path.Combine(_uploadPath, "collections", id);
+        Directory.CreateDirectory(path);
+        return path;
+    }
+
     public (string absPath, string contentType) GetDeepZoomPath(string userName, Guid projectId, Guid jobId,
         string filePath)
     {
@@ -246,10 +253,10 @@ public class ImageStorageService : IImageStorageService
         }
     }
 
-    private async Task SaveDownscaledRgbImageAsync(IFormFile file, string originalPath)
+    public static async Task SaveDownscaledRgbImageAsync(Stream stream, string originalPath)
     {
         var outputPath = GetDownscaledPath(originalPath);
-        using var image = await Image.LoadAsync(file.OpenReadStream());
+        using var image = await Image.LoadAsync(stream);
 
         // Compute new size keeping aspect ratio
         int width, height;
@@ -279,7 +286,7 @@ public class ImageStorageService : IImageStorageService
         }
     }
 
-    private string GetDownscaledPath(string originalPath)
+    private static string GetDownscaledPath(string originalPath)
     {
         var dir = Path.GetDirectoryName(originalPath)!;
         var filenameWithoutExt = Path.GetFileNameWithoutExtension(originalPath);

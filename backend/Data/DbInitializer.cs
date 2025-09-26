@@ -1,4 +1,5 @@
 ﻿using backend.Models;
+using backend.Services;
 using Microsoft.AspNetCore.Identity;
 using Task = System.Threading.Tasks.Task;
 
@@ -50,5 +51,12 @@ public class DbInitializer
             await userManager.CreateAsync(adminUser, configuration["Admin:Password"]!);
             await userManager.AddToRoleAsync(adminUser, "Admin");
         }
+    }
+
+    public static async Task InitTileCollections(IHost host)
+    {
+        using var scope = host.Services.CreateScope();
+        var collections = scope.ServiceProvider.GetRequiredService<ITileCollectionService>();
+        await collections.InitTileCollectionsAsync();
     }
 }

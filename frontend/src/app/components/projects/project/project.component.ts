@@ -5,6 +5,7 @@ import {ImageUploaderComponent} from '../../image-uploader/image-uploader.compon
 import {ImageListComponent} from '../../image-list/image-list.component';
 import {JobListComponent} from '../../mosaics/job-list/job-list.component';
 import {ProjectService} from '../../../services/project.service';
+import {CollectionSelectorComponent} from '../../collections/collection-selector/collection-selector.component';
 
 @Component({
     selector: 'app-project',
@@ -14,7 +15,8 @@ import {ProjectService} from '../../../services/project.service';
         ImageUploaderComponent,
         NgClass,
         ImageListComponent,
-        JobListComponent
+        JobListComponent,
+        CollectionSelectorComponent
     ],
     templateUrl: './project.component.html',
     styleUrl: './project.component.css'

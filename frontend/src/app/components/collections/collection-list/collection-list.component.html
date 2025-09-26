@@ -1,0 +1,63 @@
+<div class="row row-cols-1 row-cols-lg-3 g-3">
+    @for (c of collections(); track c.id) {
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+
+                    <h5 class="card-title m-0">
+                        @switch (c.status) {
+                            @case (CollectionStatus.NotInstalled) {
+                                <span class="badge text-bg-dark">Not Installed</span>
+                            }
+                            @case (CollectionStatus.Downloading) {
+                                <span class="badge text-bg-warning">Installing</span>
+                            }
+                            @case (CollectionStatus.Ready) {
+                                <span class="badge text-bg-success">Installed</span>
+                            }
+                        }
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ c.name }}</h5>
+                    <p class="card-text">{{ c.description }}</p>
+                    <ul class="list-group mb-3">
+                        <li class="list-group-item"><strong>Number of Images:</strong> {{ c.imageCount }}</li>
+                        <li class="list-group-item"><strong>Size:</strong> {{ c.size }}</li>
+                        @if (c.installDate) {
+                            <li class="list-group-item">
+                                <strong>Installed:</strong> {{ c.installDate | date:'shortDate' }}
+                            </li>
+                        }
+                    </ul>
+                    <div>
+                        @switch (c.status) {
+                            @case (CollectionStatus.NotInstalled) {
+                                <button
+                                    class="btn btn-primary"
+                                    (click)="install(c.id)">
+                                    Install
+                                </button>
+                            }
+                            @case (CollectionStatus.Downloading) {
+                                <button class="btn btn-primary mb-3" disabled>
+                                    <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                                    <span role="status">Installing...</span>
+                                </button>
+                            }
+                            @case (CollectionStatus.Ready) {
+                                <button
+                                    class="btn btn-danger"
+                                    [disabled]="c.status !== CollectionStatus.Ready"
+                                    (click)="uninstall(c.id)">
+                                    Uninstall
+                                </button>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    }
+</div>

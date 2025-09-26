@@ -15,4 +15,6 @@ public class Project
     
     public ICollection<Job> Jobs { get; init; } = null!;
     
+    public ICollection<TileCollection> TileCollections { get; init; } = null!;
+    
 }

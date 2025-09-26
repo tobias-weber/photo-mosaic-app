@@ -11,7 +11,7 @@ public class ProcessingService : IProcessingService
     private readonly AppDbContext _db;
     private readonly IImageStorageService _storage;
 
-    private const int MaxN = 4000;
+    private const int MaxN = 12000;
     private const int MaxCropCount = 5;
     private const int MaxRepetitions = 5;
 
@@ -36,6 +36,23 @@ public class ProcessingService : IProcessingService
             throw new InvalidOperationException("The number of repetitions must be positive.");
         if (request.Repetitions > MaxRepetitions)
             throw new InvalidOperationException($"The number of repetitions is limited to at most {MaxRepetitions}.");
+        
+        
+        var collections = await _db.Projects
+            .Where(p => p.ProjectId == projectId)
+            .Select(p => p.TileCollections)
+            .FirstAsync();
+
+        var notInstalled = collections.FirstOrDefault(c => c.Status != CollectionStatus.Ready);
+        if (notInstalled is not null)
+        {
+            throw new InvalidOperationException($"The selected collection {notInstalled.Id} is not installed.");
+        }
+
+        var collectionTileCount = collections.Select(c => c.TrueImageCount).Sum();
+        var tileCount = await _db.Images.Where(i => i.ProjectId == projectId && !i.IsTarget).CountAsync();
+        if (tileCount + collectionTileCount == 0) 
+            throw new InvalidOperationException("There are no tiles present.");
 
         var job = new Job()
         {
@@ -45,7 +62,7 @@ public class ProcessingService : IProcessingService
             Status = JobStatus.Created,
             Progress = 0,
             N = request.N == 0
-                ? await _db.Images.Where(i => i.ProjectId == projectId && !i.IsTarget).CountAsync()
+                ? tileCount + collectionTileCount
                 : request.N,
             CropCount = request.CropCount,
             Repetitions = request.Repetitions,
@@ -55,7 +72,6 @@ public class ProcessingService : IProcessingService
         };
         if (job.N > MaxN)
             throw new InvalidOperationException($"N is currently limited to at most {MaxN} tiles.");
-
 
         var targetPath = await _db.Images.Where(i => i.ImageId == job.TargetImageId && i.IsTarget)
             .Select(i => i.FilePath).FirstOrDefaultAsync();
@@ -79,7 +95,9 @@ public class ProcessingService : IProcessingService
             crop_count = job.CropCount,
             repetitions = job.Repetitions,
             target = targetPath,
-            tiles = tilePaths
+            tiles = tilePaths,
+            collections = collections.Select(c => $"collections/{c.Id}").ToList(),
+            tileCount = tileCount + collectionTileCount  // useful for estimating progress when loading tiles
         };
 
         _db.Jobs.Add(job);

@@ -15,14 +15,14 @@ BACKEND_CALLBACK_URL = os.getenv("BACKEND_CALLBACK_URL", "http://host.docker.int
 TILE_RESOLUTION = 32
 DZ_TILE_RESOLUTION = 512
 LOAD_PROGRESS_FRACTION = 0.4  # how much of the progress indicator is used for (typically lazily) loading images
-DOWNSCALED_IMAGE_SUFFIX = "sm"
+DOWNSCALED_IMAGE_SUFFIX = "_sm.jpg"
 
 def process_job(request: EnqueueJobRequest):
     try:
         print(f"[{datetime.now().isoformat(sep=' ', timespec='milliseconds')}] Begin processing job {request.job_id}...")
         send_status_update(JobStatus.Processing, request, 0)
 
-        target, tiles = read_images(request)
+        target, tiles, tile_paths = read_images(request)
 
         if request.algorithm == "LAP":
             builder = init_LAP_builder(target, tiles, request.n, request.subdivisions, request.crop_count, request.repetitions)
@@ -35,7 +35,7 @@ def process_job(request: EnqueueJobRequest):
 
         print(f"[{datetime.now().isoformat(sep=' ', timespec='milliseconds')}] Saving mosaic")
         job_dir = os.path.join(BASE_PATH, "users", request.username, "projects", request.project_id, "mosaics", request.job_id)
-        path_list = save_result(request.tiles, result, job_dir)
+        path_list = save_result(tile_paths, result, job_dir)
         send_status_update(JobStatus.GeneratedPreview, request)
 
         print(f"[{datetime.now().isoformat(sep=' ', timespec='milliseconds')}] Generating deepzoom")
@@ -64,14 +64,25 @@ def get_image(path, prefer_small=False) -> Image:
 
 def read_images(request: EnqueueJobRequest) -> tuple[Image, list[Image]]:
     target = get_image(request.target)
-    
+
+    tile_paths = request.tiles + get_collection_tile_paths(request.collections)
+    print(f'number of tiles: {len(tile_paths)}')
     tiles = []
-    for i, t in enumerate(request.tiles):
+    for i, t in enumerate(tile_paths):
         tiles.append(get_image(t, prefer_small=True))
         if (i+1) % 50 == 0:
-            load_progress = (i+1) / len(request.tiles)
+            load_progress = (i+1) / request.tileCount
             send_status_update(JobStatus.Processing, request, load_progress * LOAD_PROGRESS_FRACTION)
-    return target, tiles
+    return target, tiles, tile_paths
+
+
+def get_collection_tile_paths(collections):
+    paths = []
+    for collection in collections:
+        for entry in os.listdir(os.path.join(BASE_PATH, collection)):
+            if not entry.endswith(DOWNSCALED_IMAGE_SUFFIX):
+                paths.append(os.path.join(collection, entry))
+    return paths
 
 
 def init_LAP_builder(target: Image, tiles: list[Image], n: int, subdivisions: int, crop_count: int, repetitions: int) -> MosaicBuilder:
@@ -187,4 +198,4 @@ def send_status_update(status: JobStatus, request: EnqueueJobRequest, progress: 
 def get_downscaled_path(original_path: str) -> str:
     dir_name = os.path.dirname(original_path)
     filename_without_ext = os.path.splitext(os.path.basename(original_path))[0]
-    return os.path.join(dir_name, f"{filename_without_ext}_{DOWNSCALED_IMAGE_SUFFIX}.jpg")
+    return os.path.join(dir_name, f"{filename_without_ext}{DOWNSCALED_IMAGE_SUFFIX}")
