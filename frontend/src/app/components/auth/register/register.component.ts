@@ -49,7 +49,7 @@ export class RegisterComponent {
 
         this.auth.register(username, password).subscribe({
             next: () => {
-                this.router.navigate(['/dashboard']);
+                this.router.navigate(['/projects']);
             },
             error: err => {
                 this.error.set(`Registration failed${err.error?.[0].description && (': ' + err.error[0].description)}`);

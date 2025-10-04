@@ -37,7 +37,7 @@ export class CreateJobModalComponent implements OnInit {
 
         // LAP-specific controls:
         colorSpace: ['CIELAB', [Validators.required]],
-        subdivisions: [5, [Validators.required, Validators.min(1), Validators.max(this.maxSubdivisions)]],
+        subdivisions: [7, [Validators.required, Validators.min(1), Validators.max(this.maxSubdivisions)]],
         repetitions: [1, [Validators.required, Validators.min(1), Validators.max(this.maxRepetitions)]],
         cropCount: [1, [Validators.required, Validators.min(1), Validators.max(this.maxCropCount)]],
     });

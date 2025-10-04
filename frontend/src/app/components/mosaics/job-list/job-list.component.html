@@ -1,6 +1,6 @@
 <div class="row row-gap-4">
     <div>
-        <button class="btn btn-primary mb-3" (click)="createJob()" [disabled]="isCreating()">
+        <button class="btn btn-primary mb-3" (click)="createJob()" [disabled]="isCreating() || !hasTargetImage()">
             @if (isCreating()) {
                 <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
                 <span role="status">Creating...</span>

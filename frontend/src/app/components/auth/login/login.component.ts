@@ -56,7 +56,7 @@ export class LoginComponent {
     }
 
     private navigateToReturnUrl() {
-        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/dashboard';
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/projects';
         this.router.navigateByUrl(returnUrl);
     }
 }

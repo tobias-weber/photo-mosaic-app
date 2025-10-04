@@ -1,4 +1,4 @@
-import {Component, effect, inject, OnDestroy, signal, Signal, untracked} from '@angular/core';
+import {Component, computed, effect, inject, OnDestroy, signal, Signal, untracked} from '@angular/core';
 import {ToastService} from '../../../services/toast.service';
 import {ApiService, Job, JobStatus} from '../../../services/api.service';
 import {ModalService} from '../../../services/modal.service';
@@ -29,6 +29,7 @@ export class JobListComponent implements OnDestroy {
     projectId = this.projectService.projectId;
     private refreshTrigger = signal(false);
     isCreating = signal(false);
+    hasTargetImage = computed(() => this.projectService.targetImageRefs().length > 0)
 
     mosaics = signal<Record<string, { url: string }>>({});
 

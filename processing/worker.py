@@ -138,8 +138,8 @@ def load_vips_tile(path: Union[str, list[str]], crop_count: int) -> pyvips.Image
 
     image = pyvips.Image.new_from_file(os.path.join(BASE_PATH, image_path), access="sequential")
     if image.bands == 4:
-        # If RGBA, discard the alpha channel to get RGB
-        image = image.extract_band(0, n=3)
+        # If RGBA, flatten on black background
+        image = image.flatten(background=[0, 0, 0])
 
     width = image.width
     height = image.height

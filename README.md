@@ -89,3 +89,11 @@ This project is MIT licensed. In particular, it uses the following third-party l
 - ImageSharp – Apache 2.0 license. https://github.com/SixLabors/ImageSharp
 
 - SciPy - BSD-3 license. https://github.com/scipy/scipy
+
+- scikit-image - BSD-3 license. https://github.com/scikit-image/scikit-image
+
+- COCO Dataset - CC BY 4.0. https://cocodataset.org/
+
+- Noto Emoji - Open Font License 1.1. https://github.com/googlefonts/noto-emoji
+
+- Twemoji - CC BY 4.0. https://github.com/twitter/twemoji
