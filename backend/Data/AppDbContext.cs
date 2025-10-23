@@ -12,6 +12,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Job> Jobs { get; set; }
     public DbSet<ImageRef> Images { get; set; }
     public DbSet<TileCollection> TileCollections { get; set; }
+    
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -26,6 +28,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             .ValueGeneratedOnAdd();
         modelBuilder.Entity<Job>()
             .Property(t => t.StartedAt)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP")
+            .ValueGeneratedOnAdd();
+        modelBuilder.Entity<RefreshToken>()
+            .Property(u => u.CreatedAt)
             .HasDefaultValueSql("CURRENT_TIMESTAMP")
             .ValueGeneratedOnAdd();
 

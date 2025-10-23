@@ -31,6 +31,14 @@ export class ApiService {
         return this.http.post<AuthResponse>(`${this.BASE_URL}/login`, {userName, password});
     }
 
+    logout() {
+        return this.http.post<AuthResponse>(`${this.BASE_URL}/logout`, {}, {withCredentials: true});
+    }
+
+    refreshAccessToken() {
+        return this.http.post<AuthResponse>(`${this.BASE_URL}/refresh`, {}, {withCredentials: true});
+    }
+
     getUser(userName: string) {
         return this.http.get<User>(`${this.BASE_URL}/users/${userName}`);
     }
