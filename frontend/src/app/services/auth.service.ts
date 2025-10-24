@@ -1,7 +1,7 @@
 import {computed, inject, Injectable, signal} from '@angular/core';
 import {ApiService, AuthResponse} from './api.service';
 import {Router} from '@angular/router';
-import {catchError, filter, Observable, of, switchMap, tap, timer} from 'rxjs';
+import {BehaviorSubject, catchError, filter, finalize, Observable, of, switchMap, take, tap, timer} from 'rxjs';
 import {toObservable, toSignal} from '@angular/core/rxjs-interop';
 import {HttpEvent, HttpHandlerFn, HttpRequest} from '@angular/common/http';
 
@@ -10,6 +10,7 @@ export const maxNameLength = 128;
 export const minPwLength = 6;
 export const maxPwLength = 128;
 export const tokenKey = 'auth_token';
+export const refreshBeforeExpirationMs = 120 * 1000;
 
 @Injectable({
     providedIn: 'root'
@@ -20,13 +21,15 @@ export class AuthService {
     private api = inject(ApiService);
     private router = inject(Router);
 
-    private isRefreshing = false;
+    private refreshSubject = new BehaviorSubject<boolean>(false);
 
     private _token = signal<string | null>(localStorage.getItem(tokenKey));
     private _expiration = signal<string | null>(localStorage.getItem(this.expirationKey));
+
     get token() {
         return this._token.asReadonly();
     }
+
     get expiration() {
         return this._expiration.asReadonly();
     }
@@ -44,10 +47,7 @@ export class AuthService {
         }
     });
 
-    isLoggedIn = computed(() => {
-        return this.token() !== null;
-         //new Date(exp) > new Date(); no longer needed because of refresh token
-    });
+    isLoggedIn = computed(() => this.token() !== null); // we assume we're still logged in even if the auth token expired
     userName = computed<string | null>(() =>
         this.payload()?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || null);
     userRole = computed<string | null>(() =>
@@ -93,32 +93,33 @@ export class AuthService {
         });
     }
 
-    refreshThenRepeatRequest(req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> {
-        if (!this.isRefreshing) { // avoid infinite loop
-            this.isRefreshing = true;
-            return this.api.refreshAccessToken().pipe(
-                switchMap((res) => {
-                    this.setSession(res);
-                    this.isRefreshing = false;
-                    return next(this.getRequestWithAuthHeader(req))
-                }),
-                catchError(err => { // unable to refresh access token
-                    this.isRefreshing = false;
-                    this.logout();
-                    throw err;
-                })
-            );
-        }
-        return timer(500).pipe(switchMap(() => next(this.getRequestWithAuthHeader(req)))); // wait for refresh operation to finish
+    onRefreshFinished() {
+        return this.refreshSubject.pipe(
+            filter(isRefreshing => !isRefreshing),
+            take(1) // Observable completes as soon as refresh is finished
+        );
     }
 
-    getRequestWithAuthHeader(req: HttpRequest<unknown>) {
-        if (this.token()) {
-            return req.clone({
-                headers: req.headers.set('Authorization', `Bearer ${this.token()}`)
-            });
+    triggerRefresh() {
+        if (this.refreshSubject.value) {
+            return
         }
-        return req;
+        this.refreshSubject.next(true);
+        this.api.refreshAccessToken().pipe(
+            finalize(() => this.refreshSubject.next(false))
+        ).subscribe({
+            next: res => this.setSession(res),
+            error: () => this.logout() // unable to refresh access token
+        });
+    }
+
+    isRefreshRequest(request: HttpRequest<unknown>) {
+        return request.url === this.api.REFRESH_URL;
+    }
+
+    tokenExpiresSoon() {
+        return this.expiration() &&
+            new Date(this.expiration()!).getTime() - refreshBeforeExpirationMs < (Date.now());
     }
 
     private setSession(auth: AuthResponse) {
@@ -128,9 +129,4 @@ export class AuthService {
         this._expiration.set(auth.expiration);
     }
 
-}
-
-export interface UserInfo {
-    username: string;
-    role: 'User' | 'Admin';
 }

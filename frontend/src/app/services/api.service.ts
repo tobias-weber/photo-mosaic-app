@@ -9,6 +9,7 @@ export class ApiService {
 
     private http = inject(HttpClient);
     private readonly BASE_URL = '/backend-api';
+    public readonly REFRESH_URL = `${this.BASE_URL}/refresh`;
 
     /**
      * Performs a generic GET request to a specified endpoint.
@@ -36,7 +37,7 @@ export class ApiService {
     }
 
     refreshAccessToken() {
-        return this.http.post<AuthResponse>(`${this.BASE_URL}/refresh`, {}, {withCredentials: true});
+        return this.http.post<AuthResponse>(this.REFRESH_URL, {}, {withCredentials: true});
     }
 
     getUser(userName: string) {
