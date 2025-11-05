@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+var isDevelopment = builder.Environment.IsDevelopment();
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -20,7 +21,17 @@ builder.Services.AddOpenApi();
 
 // Database service
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    var connection = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (isDevelopment)
+    {
+        options.UseSqlite(connection); // Sqlite
+    }
+    else
+    {
+        options.UseNpgsql(connection); // Postgres
+    }
+});
 
 
 // Authentication
@@ -65,7 +76,7 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"))
     .AddPolicy("UserPolicy", policy => policy.RequireRole("User"))
     .AddPolicy("GuestPolicy", policy => policy.RequireRole("Guest"))
-    .AddPolicy("AnyRolePolicy", policy => 
+    .AddPolicy("AnyRolePolicy", policy =>
         policy.RequireRole("Admin", "User", "Guest"))
     .AddPolicy("OwnerOrAdmin", policy => policy.RequireAssertion(context =>
         {
@@ -121,7 +132,7 @@ var app = builder.Build();
 app.UseCors(corsPolicy); // MUST come before endpoint mapping
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (isDevelopment)
 {
     app.MapOpenApi();
 }

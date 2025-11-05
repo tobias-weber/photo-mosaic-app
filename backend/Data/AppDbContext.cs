@@ -1,4 +1,5 @@
-﻿using backend.Models;
+﻿using backend.Helpers;
+using backend.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -18,21 +19,23 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        var currentTimestamp = DatabaseHelper.IsSqlite(Database) ? "CURRENT_TIMESTAMP" : "NOW()";
+        
         modelBuilder.Entity<User>()
             .Property(u => u.CreatedAt)
-            .HasDefaultValueSql("CURRENT_TIMESTAMP")
+            .HasDefaultValueSql(currentTimestamp)
             .ValueGeneratedOnAdd();
         modelBuilder.Entity<Project>()
             .Property(p => p.CreatedAt)
-            .HasDefaultValueSql("CURRENT_TIMESTAMP")
+            .HasDefaultValueSql(currentTimestamp)
             .ValueGeneratedOnAdd();
         modelBuilder.Entity<Job>()
             .Property(t => t.StartedAt)
-            .HasDefaultValueSql("CURRENT_TIMESTAMP")
+            .HasDefaultValueSql(currentTimestamp)
             .ValueGeneratedOnAdd();
         modelBuilder.Entity<RefreshToken>()
             .Property(u => u.CreatedAt)
-            .HasDefaultValueSql("CURRENT_TIMESTAMP")
+            .HasDefaultValueSql(currentTimestamp)
             .ValueGeneratedOnAdd();
 
         modelBuilder.Entity<Job>()

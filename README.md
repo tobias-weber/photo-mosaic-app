@@ -5,10 +5,10 @@
 This project demonstrates a **photo mosaic generator** built with:
 
 - **Backend** (`/backend`): ASP.NET Core 9 Web API  
-  Handles user requests, image uploads, mosaic generation orchestration, and stores metadata in SQLite + raw files on disk (`/backend/storage` during development).  
+  Handles user requests, image uploads, mosaic generation orchestration, and stores metadata in a database (default is PostgreSQL in prod, Sqlite in dev) and raw files on disk (`/backend/storage` during development).  
 
 - **Frontend** (`/frontend`): Angular  
-  Provides the UI for uploading images, managing generation jobs, and displaying generated mosaics.  
+  Provides the UI for uploading images, managing generation jobs and displaying generated mosaics.  
   Served via Nginx, which also proxies `/backend-api/` requests to the backend container.
 
 - **Processing** (`/processing`): Python  
@@ -45,6 +45,8 @@ This project is under active development. Features are subject to change, some m
           - Jwt__Key=MyVerySecureNewKey
           - Admin__Password=MyVerySecurePassword
     ```
+
+    It is also recommended to change the default password of the database and adjust the `ConnectionStrings__DefaultConnection` backend environment variable accordingly.
 3. Build and start containers:
     ```bash
     docker-compose up --build
@@ -81,7 +83,7 @@ Other notes:
 ---
 
 ## Third-Party Libraries / Acknowledgements
-This project is MIT licensed. In particular, it uses the following third-party libraries:
+This project is MIT licensed. In particular, it uses the following third-party libraries and data sets:
 - libvips – LGPL-2.1. https://github.com/libvips/libvips
 
 - OpenSeadragon – BSD-3 license. https://openseadragon.github.io/

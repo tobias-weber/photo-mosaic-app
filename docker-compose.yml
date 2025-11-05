@@ -1,13 +1,34 @@
 services:
+  db:
+    image: postgres:16
+    container_name: app-postgres
+    restart: on-failure
+    environment:
+      POSTGRES_USER: backenduser
+      POSTGRES_PASSWORD: mypassword # <-- change to a secure password for actual production environments
+      POSTGRES_DB: mosaicdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U backenduser -d mosaicdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: photo-mosaic-backend
+    depends_on:
+      db:
+        condition: service_healthy
     volumes:
       - mosaic-data:/app/storage
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=mosaicdb;Username=backenduser;Password=mypassword"
 
   frontend:
     build:
@@ -49,4 +70,5 @@ services:
       - mosaic-data:/app/storage
 
 volumes:
+  postgres_data:
   mosaic-data:

@@ -1,9 +1,9 @@
 import {computed, inject, Injectable, signal} from '@angular/core';
 import {ApiService, AuthResponse} from './api.service';
 import {Router} from '@angular/router';
-import {BehaviorSubject, catchError, filter, finalize, Observable, of, switchMap, take, tap, timer} from 'rxjs';
+import {BehaviorSubject, catchError, filter, finalize, of, switchMap, take, tap} from 'rxjs';
 import {toObservable, toSignal} from '@angular/core/rxjs-interop';
-import {HttpEvent, HttpHandlerFn, HttpRequest} from '@angular/common/http';
+import {HttpRequest} from '@angular/common/http';
 
 
 export const maxNameLength = 128;
