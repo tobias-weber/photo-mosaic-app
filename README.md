@@ -65,6 +65,10 @@ To enable concurrent mosaic processing, simply run docker compose with multiple 
 docker compose up --scale worker=3
 ```
 
+## ☸️ Deployment to a Kubernetes Cluster
+For advanced users, we also provide a manual for deploying to a Kubernetes cluster.
+Please consult [k8s/README.md](k8s/README.md) for more details.
+
 
 ## 🛠 Development Notes
 Consult the READMEs for the [frontend](frontend/README.md) or [backend](backend/README.md) for how to run them outside of docker for development.

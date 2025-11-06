@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-api
+  namespace: photo-mosaic
+spec:
+  selector:
+    matchLabels:
+      app: python-api
+  template:
+    metadata:
+      labels:
+        app: python-api
+    spec:
+      containers:
+      - name: python-api
+        image: photo-mosaic-processing:latest
+        imagePullPolicy: Never
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "128m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8000
+        env:
+          - name: REDIS_HOST
+            value: redis
+          - name: REDIS_PORT
+            value: "6379"
+          - name: BACKEND_CALLBACK_URL
+            value: http://backend:8080/jobs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-api
+spec:
+  selector:
+    app: python-api
+  ports:
+  - port: 8000
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: photo-mosaic
+spec:
+  replicas: 3  # change number of workers here
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+        - name: worker
+          image: photo-mosaic-processing:latest
+          imagePullPolicy: Never
+          command: ["rq"]
+          args: ["worker", "--url", "redis://redis:6379", "default"]
+          env:
+            - name: BASE_PATH
+              value: /app/storage/images
+            - name: BACKEND_CALLBACK_URL
+              value: http://backend:8080/jobs
+          volumeMounts:
+            - mountPath: /app/storage
+              name: mosaic-storage
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "1500m"
+              memory: "4Gi"
+      volumes:
+        - name: mosaic-storage
+          persistentVolumeClaim:
+            claimName: mosaic-pvc
+# No need for a worker service as they do not have to be reachable from the network.

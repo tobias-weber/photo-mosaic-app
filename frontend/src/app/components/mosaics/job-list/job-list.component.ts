@@ -3,7 +3,7 @@ import {ToastService} from '../../../services/toast.service';
 import {ApiService, Job, JobStatus} from '../../../services/api.service';
 import {ModalService} from '../../../services/modal.service';
 import {toObservable, toSignal} from '@angular/core/rxjs-interop';
-import {combineLatest, finalize, switchMap} from 'rxjs';
+import {combineLatest, finalize, lastValueFrom, switchMap} from 'rxjs';
 import {DatePipe} from '@angular/common';
 import {ActivatedRoute, Router} from '@angular/router';
 import {CreateJobModalComponent} from '../create-job-modal/create-job-modal.component';
@@ -94,6 +94,17 @@ export class JobListComponent implements OnDestroy {
     }
 
     async createJob() {
+
+        if (this.projectService.tileImageRefs().length === 0) {
+            const selectedCollections = await lastValueFrom(
+                this.api.getSelectedCollections(this.targetUser(), this.projectId()!)
+            );
+            if (selectedCollections.length === 0) {
+                this.toast.warning("At least one tile image or selected collection is required to create a mosaic.");
+                return;
+            }
+        }
+
         const r = await this.modals.openComponentModal<{
             targetId: string,
             n: number,

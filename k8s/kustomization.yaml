@@ -1,0 +1,8 @@
+resources:
+  - namespace.yaml
+  - storage.yaml
+  - db.yaml
+  - redis.yaml
+  - processing.yaml
+  - backend.yaml
+  - frontend.yaml

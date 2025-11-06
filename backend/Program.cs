@@ -155,6 +155,7 @@ app.UseAuthorization();
 
 //////////////////// Endpoints ///////////////////////
 
+app.MapProbeEndpoints();
 app.MapAuthEndpoints();
 app.MapUserEndpoints();
 app.MapProjectEndpoints();

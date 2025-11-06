@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: db-pv
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes: [ReadWriteOnce]
+  persistentVolumeReclaimPolicy: Delete
+  hostPath:  # host path storage type -> not recommended for production
+    path: /mnt/data/db
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-pvc
+  namespace: photo-mosaic
+spec:
+  volumeName: db-pv 
+  accessModes: [ReadWriteOnce]
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mosaic-pv
+spec:
+  capacity:
+    storage: 10Gi  # storage should be increased in production
+  accessModes: [ReadWriteMany]
+  persistentVolumeReclaimPolicy: Delete
+  hostPath:  # host path storage type -> not recommended for production
+    path: /mnt/data/mosaic
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mosaic-pvc
+  namespace: photo-mosaic
+spec:
+  volumeName: mosaic-pv 
+  accessModes: [ReadWriteMany]
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 10Gi  # storage should be increased in production
